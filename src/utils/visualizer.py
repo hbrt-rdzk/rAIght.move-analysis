@@ -1,10 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
+from matplotlib.figure import Figure
 from mediapipe.framework.formats.landmark_pb2 import (
     LandmarkList,
     NormalizedLandmarkList,
 )
+from mpl_toolkits.mplot3d.axes3d import Axes3D
+
+ELEV = -79
+AZIM = -91
 
 
 class Visualizer:
@@ -23,8 +28,19 @@ class Visualizer:
         with open("configs/config.yaml") as config:
             self.config = yaml.safe_load(config)[model]
 
-    def update_3djoints(self, axis, joints):
+    @staticmethod
+    def init_3djoints_figure(
+        elev: int = ELEV, azim: int = AZIM
+    ) -> tuple[Figure, Axes3D]:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+        fig.subplots_adjust(left=0.0, right=1, bottom=0, top=1)
+        ax.view_init(elev=elev, azim=azim)
+        return fig, ax
+
+    def update_3djoints(self, axis: Axes3D, joints: np.ndarray) -> None:
         important_joints = self._prepare_joints_for_plotting(joints)
+
         axis.clear()
         axis.set_xlim3d(-1, 1)
         axis.set_ylim3d(-1, 1)
@@ -34,6 +50,10 @@ class Visualizer:
             ys=important_joints[:, 1],
             zs=important_joints[:, 2],
         )
+        axis.set_xlabel("X")
+        axis.set_ylabel("Y")
+        axis.set_zlabel("Z")
+
         for connection in self.config["connections"]["torso"]:
             try:
                 joint_start, joint_end = connection
@@ -47,11 +67,11 @@ class Visualizer:
                     ys=[start_coords[1], end_coords[1]],
                     zs=[start_coords[2], end_coords[2]],
                 )
-            except:
+            except IndexError:
                 continue
-        plt.pause(.001)
+        plt.pause(0.001)
 
-    def _prepare_joints_for_plotting(self, joints) -> tuple:
+    def _prepare_joints_for_plotting(self, joints: np.ndarray) -> np.ndarray:
         if isinstance(joints, (NormalizedLandmarkList, LandmarkList)):
             joints = self._load_joints_from_landmark(joints)
         mask = [
@@ -62,7 +82,7 @@ class Visualizer:
         return good_joints
 
     @staticmethod
-    def _load_joints_from_landmark(landmark_joints) -> list:
+    def _load_joints_from_landmark(landmark_joints: np.ndarray) -> np.ndarray:
         joints = [
             np.array([joint.x, joint.y, joint.z, joint.visibility, idx])
             for idx, joint in enumerate(landmark_joints.landmark)
