@@ -43,7 +43,7 @@ class Visualizer:
 
         axis.clear()
         axis.set_xlim3d(-1, 1)
-        axis.set_ylim3d(-1, 1)
+        axis.set_ylim3d(0, 1)
         axis.set_zlim3d(-1, 1)
         axis.scatter3D(
             xs=important_joints[:, 0],
@@ -72,19 +72,9 @@ class Visualizer:
         plt.pause(0.001)
 
     def _prepare_joints_for_plotting(self, joints: np.ndarray) -> np.ndarray:
-        if isinstance(joints, (NormalizedLandmarkList, LandmarkList)):
-            joints = self._load_joints_from_landmark(joints)
         mask = [
             (joint[3] >= 0.5) and (idx in self.config["joints"])
             for idx, joint in enumerate(joints)
         ]
         good_joints = joints[mask]
         return good_joints
-
-    @staticmethod
-    def _load_joints_from_landmark(landmark_joints: np.ndarray) -> np.ndarray:
-        joints = [
-            np.array([joint.x, joint.y, joint.z, joint.visibility, idx])
-            for idx, joint in enumerate(landmark_joints.landmark)
-        ]
-        return np.array(joints)
