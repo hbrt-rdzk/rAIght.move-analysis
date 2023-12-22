@@ -19,7 +19,6 @@ class JointsDataHandler:
 
     def add_joints(self, joints: np.ndarray, frame_index: int) -> None:
         frame_column = np.full((joints.shape[0], 1), frame_index)
-        print(np.hstack((joints, frame_column)))
         self.joints.append(np.hstack((frame_column, joints)))
 
     def save_joints(self) -> None:
