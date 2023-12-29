@@ -1,15 +1,17 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 from matplotlib.figure import Figure
-from mediapipe.framework.formats.landmark_pb2 import (
-    LandmarkList,
-    NormalizedLandmarkList,
-)
+
+matplotlib.use("TkAgg")
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 ELEV = -79
 AZIM = -91
+X_LIM = (-1, 1)
+Y_LIM = (0, 1)
+Z_LIM = (-1, 1)
 
 
 class Visualizer:
@@ -35,16 +37,19 @@ class Visualizer:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
         fig.subplots_adjust(left=0.0, right=1, bottom=0, top=1)
+        plt.get_current_fig_manager().window.wm_geometry("800x600+800-400")
+
         ax.view_init(elev=elev, azim=azim)
         return fig, ax
 
-    def update_3djoints(self, axis: Axes3D, joints: np.ndarray) -> None:
+    def update_figure(
+        self, axis: Axes3D, joints: np.ndarray, angles: dict[str, float]
+    ) -> None:
         important_joints = self._prepare_joints_for_plotting(joints)
-
         axis.clear()
-        axis.set_xlim3d(-1, 1)
-        axis.set_ylim3d(0, 1)
-        axis.set_zlim3d(-1, 1)
+        axis.set_xlim3d(*X_LIM)
+        axis.set_ylim3d(*Y_LIM)
+        axis.set_zlim3d(*Z_LIM)
         axis.scatter3D(
             xs=important_joints[:, 0],
             ys=important_joints[:, 1],
@@ -69,12 +74,23 @@ class Visualizer:
                 )
             except IndexError:
                 continue
+
+        text = ""
+        for joint_name, angle in angles.items():
+            text += f"{joint_name}: {angle:.2f}°\n"
+        text_kwargs = {
+            "s": text,
+            "x": X_LIM[0] - 1,
+            "y": Y_LIM[1] - 0.5,
+            "z": Z_LIM[0],
+            "fontsize": 10,
+            "color": "blue",
+            "style": "italic",
+            "bbox": {"facecolor": "white", "alpha": 0.7, "pad": 5},
+        }
+        axis.text3D(**text_kwargs)
         plt.pause(0.001)
 
     def _prepare_joints_for_plotting(self, joints: np.ndarray) -> np.ndarray:
-        mask = [
-            (joint[3] >= 0.5) and (idx in self.config["joints"])
-            for idx, joint in enumerate(joints)
-        ]
-        good_joints = joints[mask]
-        return good_joints
+        mask = [joint[3] >= 0.3 for joint in joints]
+        return joints[mask]

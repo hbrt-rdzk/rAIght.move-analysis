@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -12,12 +13,30 @@ class JointsDataHandler:
         with open("configs/config.yaml") as config:
             data = yaml.safe_load(config)
             self.joint_names = data[model]["joints"]
-        self.results_path = data["joints_output_path"]
+            self.angles = data[model]["angles"]
+            self.results_path = data["joints_output_path"]
         self.joints = []
+        self._frames_num = 0
 
-    def add_joints(self, joints: np.ndarray, frame_index: int = 0) -> None:
-        frame_column = np.full((joints.shape[0], 1), frame_index)
+    def update_joints(self, joints: np.ndarray) -> None:
+        frame_column = np.full((joints.shape[0], 1), self._frames_num)
         self.joints.append(np.hstack((frame_column, joints)))
+        self._frames_num += 1
+
+    def load_joints_from_landmark(self, landmark_joints: np.ndarray) -> np.ndarray:
+        joints = np.array(
+            [
+                np.array([joint.x, joint.y, joint.z, joint.visibility, idx])
+                for idx, joint in enumerate(landmark_joints.landmark)
+            ]
+        )
+        return joints[np.isin(joints[:, -1], list(self.joint_names.keys()))]
+
+    def calculate_angles(self) -> dict[str, float]:
+        angles = {}
+        for name, joint_nums in self.angles.items():
+            angles[name] = self._calculate_angle_between_joints(*joint_nums)
+        return angles
 
     def save_joints(self, output_filename: str) -> None:
         if not self.joints:
@@ -28,7 +47,6 @@ class JointsDataHandler:
         output_path = os.path.join(self.results_path, output_filename)
 
         joints_ = np.concatenate(self.joints)
-        joints_ = joints_[np.isin(joints_[:, -1], list(self.joint_names.keys()))]
 
         joints_df = pd.DataFrame(joints_, columns=OUTPUT_COLUMNS)
         joints_df["frame"] = joints_df["frame"].astype(int)
@@ -36,38 +54,25 @@ class JointsDataHandler:
 
         joints_df.to_csv(output_path, index=False)
 
-    def calculate_angle_between_joints(
-        self, joint_1_id: int, joint_2_id: int, joint_3_id: int, frame: int = 0
+    def _calculate_angle_between_joints(
+        self, joint_1_id: int, joint_2_id: int, joint_3_id: int, frame: int = -1
     ) -> float:
         desired_frame_joints = self.joints[frame]
-        return self._calculate_3d_angle(
-            desired_frame_joints[desired_frame_joints[:, 6] == joint_1_id][0, 1:4],
-            desired_frame_joints[desired_frame_joints[:, 6] == joint_2_id][0, 1:4],
-            desired_frame_joints[desired_frame_joints[:, 6] == joint_3_id][0, 1:4],
+        return self.calculate_3d_angle(
+            desired_frame_joints[desired_frame_joints[:, 5] == joint_1_id][0, 1:4],
+            desired_frame_joints[desired_frame_joints[:, 5] == joint_2_id][0, 1:4],
+            desired_frame_joints[desired_frame_joints[:, 5] == joint_3_id][0, 1:4],
         )
 
     @staticmethod
-    def load_joints_from_landmark(landmark_joints: np.ndarray) -> np.ndarray:
-        joints = [
-            np.array([joint.x, joint.y, joint.z, joint.visibility, idx])
-            for idx, joint in enumerate(landmark_joints.landmark)
-        ]
-        return np.array(joints)
-
-    @staticmethod
-    def _calculate_3d_angle(A: np.ndarray, B: np.ndarray, C: np.ndarray) -> float:
+    def calculate_3d_angle(A: np.ndarray, B: np.ndarray, C: np.ndarray) -> float:
         assert A.shape == B.shape == C.shape == (3,)
         assert A.dtype == B.dtype == C.dtype == np.float64
 
-        AB = np.array(B) - np.array(A)
-        BC = np.array(C) - np.array(B)
+        ba = A - B
+        bc = C - B
 
-        dot_product = np.dot(AB, BC)
+        cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+        angle = np.arccos(cosine_angle)
 
-        norm_AB = np.linalg.norm(AB)
-        norm_BC = np.linalg.norm(BC)
-
-        angle_rad = np.arccos(dot_product / (norm_AB * norm_BC))
-        angle_deg = np.degrees(angle_rad)
-
-        return angle_deg
+        return np.degrees(angle)

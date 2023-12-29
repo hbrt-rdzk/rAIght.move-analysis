@@ -7,11 +7,10 @@ from src.utils.joints_data_handler import JointsDataHandler
 from src.utils.visualizer import Visualizer
 
 
-def run(args: dict) -> None:
+def run(args) -> None:
     mp_pose = mp.solutions.pose
     mp_drawing = mp.solutions.drawing_utils
     pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
-    frame_idx = 1
 
     visualizer = Visualizer("pose_landmarker")
     _, ax = visualizer.init_3djoints_figure()
@@ -19,6 +18,9 @@ def run(args: dict) -> None:
     handler = JointsDataHandler("pose_landmarker")
 
     cap = cv2.VideoCapture(args.input)
+    cv2.namedWindow("Mediapipe", cv2.WINDOW_AUTOSIZE)
+    cv2.moveWindow("Mediapipe", 0, -100)
+
     if not cap.isOpened():
         print("Error on opening video stream or file!")
         return
@@ -28,7 +30,6 @@ def run(args: dict) -> None:
         if not ret:
             if args.loop:
                 cap = cv2.VideoCapture(args.input)
-                frame_idx = 1
                 continue
             else:
                 break
@@ -38,14 +39,13 @@ def run(args: dict) -> None:
             mp_drawing.draw_landmarks(frame, results, mp_pose.POSE_CONNECTIONS)
 
             joints = handler.load_joints_from_landmark(results)
-            visualizer.update_3djoints(ax, joints)
-            handler.add_joints(joints, frame_idx)
+            handler.update_joints(joints)
+            angles = handler.calculate_angles()
+            visualizer.update_figure(ax, joints, angles)
 
         cv2.imshow("Mediapipe", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
-
-        frame_idx += 1
 
     cap.release()
     cv2.destroyAllWindows()
