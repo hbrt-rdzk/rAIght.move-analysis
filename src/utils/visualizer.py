@@ -1,10 +1,11 @@
 import matplotlib
+
+matplotlib.use("TkAgg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 from matplotlib.figure import Figure
-
-matplotlib.use("TkAgg")
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
 ELEV = -79
@@ -12,23 +13,18 @@ AZIM = -91
 X_LIM = (-1, 1)
 Y_LIM = (0, 1)
 Z_LIM = (-1, 1)
+CONFIG_PATH = "configs/config.yaml"
 
 
 class Visualizer:
-    """
-    A class to visualize 2D and 3D joint data using plotly.
-
-    Attributes:
-        image (np.ndarray): Image on which 2D joints are to be plotted.
-        joints_3d (np.ndarray, NormalizedLandmarkList, LandmarkList): Array of 3D joint positions.
-    """
-
-    def __init__(
-        self,
-        model: str,
-    ) -> None:
-        with open("configs/config.yaml") as config:
-            self.config = yaml.safe_load(config)[model]
+    def __init__(self, model: str) -> None:
+        try:
+            with open(CONFIG_PATH) as config:
+                self.config = yaml.safe_load(config)[model]
+        except FileNotFoundError:
+            raise FileNotFoundError("Configuration file not found")
+        except yaml.YAMLError as exc:
+            raise ValueError(f"Error parsing YAML file: {exc}")
 
     @staticmethod
     def init_3djoints_figure(
@@ -37,7 +33,9 @@ class Visualizer:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
         fig.subplots_adjust(left=0.0, right=1, bottom=0, top=1)
-        plt.get_current_fig_manager().window.wm_geometry("800x600+800-400")
+
+        if hasattr(plt.get_current_fig_manager(), "window"):
+            plt.get_current_fig_manager().window.wm_geometry("800x600+800-400")
 
         ax.view_init(elev=elev, azim=azim)
         return fig, ax
@@ -45,7 +43,7 @@ class Visualizer:
     def update_figure(
         self, axis: Axes3D, joints: np.ndarray, angles: dict[str, float]
     ) -> None:
-        important_joints = self._prepare_joints_for_plotting(joints)
+        important_joints = self.__prepare_joints_for_plotting(joints)
         axis.clear()
         axis.set_xlim3d(*X_LIM)
         axis.set_ylim3d(*Y_LIM)
@@ -60,20 +58,15 @@ class Visualizer:
         axis.set_zlabel("Z")
 
         for connection in self.config["connections"]["torso"]:
-            try:
-                joint_start, joint_end = connection
-                start_coords = important_joints[important_joints[:, 4] == joint_start][
-                    0
-                ]
-                end_coords = important_joints[important_joints[:, 4] == joint_end][0]
-
+            joint_start, joint_end = connection
+            start_coords = important_joints[important_joints[:, 4] == joint_start]
+            end_coords = important_joints[important_joints[:, 4] == joint_end]
+            if len(start_coords) > 0 and len(end_coords) > 0:
                 axis.plot(
-                    xs=[start_coords[0], end_coords[0]],
-                    ys=[start_coords[1], end_coords[1]],
-                    zs=[start_coords[2], end_coords[2]],
+                    xs=[start_coords[0, 0], end_coords[0, 0]],
+                    ys=[start_coords[0, 1], end_coords[0, 1]],
+                    zs=[start_coords[0, 2], end_coords[0, 2]],
                 )
-            except IndexError:
-                continue
 
         text = ""
         for joint_name, angle in angles.items():
@@ -91,6 +84,6 @@ class Visualizer:
         axis.text3D(**text_kwargs)
         plt.pause(0.001)
 
-    def _prepare_joints_for_plotting(self, joints: np.ndarray) -> np.ndarray:
-        mask = [joint[3] >= 0.3 for joint in joints]
+    def __prepare_joints_for_plotting(self, joints: np.ndarray) -> np.ndarray:
+        mask = [joint[3] >= 0.2 for joint in joints]
         return joints[mask]
