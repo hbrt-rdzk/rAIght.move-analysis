@@ -6,28 +6,33 @@ import yaml
 
 OUTPUT_COLUMNS = ("frame", "x", "y", "z", "visibility", "joint_id")
 CONFIG_PATH = "configs/config.yaml"
+REFERENCE_TABLE_PATH = "configs/reference_tables.yaml"
 
 
 class JointsDataHandler:
-    def __init__(self, model: str) -> None:
+    def __init__(self, model: str, exercise: str) -> None:
         try:
             with open(CONFIG_PATH) as config:
                 data = yaml.safe_load(config)
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Configuration file not found at {CONFIG_PATH}")
-        except yaml.YAMLError as exc:
-            raise ValueError(f"Error parsing YAML file: {exc}")
+            with open(REFERENCE_TABLE_PATH) as config:
+                reference_table = yaml.safe_load(config)
+        except FileNotFoundError as error:
+            raise FileNotFoundError(f"File not found {error}")
+        except yaml.YAMLError as error:
+            raise ValueError(f"Error parsing YAML file: {error}")
 
         self.joint_names = data[model]["joints"]
         self.angles = data[model]["angles"]
         self.results_path = data["joints_output_path"]
+
+        self.reference_table = reference_table[exercise]
         self.joints = []
-        self._frames_num = 0
+        self.__frames_num = 0
 
     def update_joints(self, joints: np.ndarray) -> None:
-        frame_column = np.full((joints.shape[0], 1), self._frames_num)
+        frame_column = np.full((joints.shape[0], 1), self.__frames_num)
         self.joints.append(np.hstack((frame_column, joints)))
-        self._frames_num += 1
+        self.__frames_num += 1
 
     def load_joints_from_landmark(self, landmark_joints: np.ndarray) -> np.ndarray:
         joint_ids = list(map(int, self.joint_names.keys()))
@@ -68,14 +73,25 @@ class JointsDataHandler:
             raise IndexError("Frame index out of range.")
 
         desired_frame_joints = self.joints[frame]
-        return self.calculate_3d_angle(
+        return self.calculate_3D_angle(
             desired_frame_joints[desired_frame_joints[:, 5] == joint_1_id][0, 1:4],
             desired_frame_joints[desired_frame_joints[:, 5] == joint_2_id][0, 1:4],
             desired_frame_joints[desired_frame_joints[:, 5] == joint_3_id][0, 1:4],
         )
 
+    def get_exercise_phase(self, angles: dict) -> str:
+        phases = self.reference_table["phases"]
+        for phase, positions in phases.items():
+            if any(
+                [
+                    scope[0] > angles[joint] > scope[1]
+                    for joint, scope, in positions.items()
+                ]
+            ):
+                return phase
+
     @staticmethod
-    def calculate_3d_angle(A: np.ndarray, B: np.ndarray, C: np.ndarray) -> float:
+    def calculate_3D_angle(A: np.ndarray, B: np.ndarray, C: np.ndarray) -> float:
         if not (A.shape == B.shape == C.shape == (3,)):
             raise ValueError("Input arrays must all be of shape (3,).")
         if not (A.dtype == B.dtype == C.dtype == np.float64):

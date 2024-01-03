@@ -1,15 +1,14 @@
 squat:
   phases:
-    start/end:
-      right_knee: [180, 178]
-      left_knee: [180, 178]
-    going_down/up:
+    up:
+      right_knee: [180, 150]
+      left_knee: [180, 150]
+    mid:
       right_knee: [125, 110]
       left_knee: [125, 110]
     down:
       right_knee: [65, 50]
       left_knee: [65, 50]
-
 
   reference_angles:
     start/end:

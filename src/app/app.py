@@ -13,9 +13,7 @@ def run(args) -> None:
     pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
     visualizer = Visualizer("pose_landmarker")
-    _, ax = visualizer.init_3djoints_figure()
-
-    handler = JointsDataHandler("pose_landmarker")
+    handler = JointsDataHandler("pose_landmarker", args.exercise)
 
     cap = cv2.VideoCapture(args.input)
     cv2.namedWindow("Mediapipe", cv2.WINDOW_AUTOSIZE)
@@ -36,12 +34,13 @@ def run(args) -> None:
 
         results = pose.process(frame).pose_landmarks
         if results:
-            mp_drawing.draw_landmarks(frame, results, mp_pose.POSE_CONNECTIONS)
-
             joints = handler.load_joints_from_landmark(results)
             handler.update_joints(joints)
             angles = handler.calculate_angles()
-            visualizer.update_figure(ax, joints, angles)
+
+            visualizer.phase = handler.get_exercise_phase(angles)
+            visualizer.update_figure(joints, angles)
+            mp_drawing.draw_landmarks(frame, results, mp_pose.POSE_CONNECTIONS)
 
         cv2.imshow("Mediapipe", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -67,6 +66,13 @@ def main():
         help="Camera numer or path to video",
         default=0,
         type=lambda x: int(x) if x.isdigit() else x,
+        required=True,
+    )
+    required.add_argument(
+        "--exercise",
+        help="Type of exercise",
+        default="squat",
+        type=str,
         required=True,
     )
 
