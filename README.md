@@ -45,27 +45,34 @@ To run the Gym Assistant, use the following command:
 python3 src/app/app.py
 ```
 
-You can provide the following arguments:
+You have to provide the following arguments:
 
 - `-i`, `--input`: Specify the camera number or path to the video file you wish to analyze.
-- `--loop`: Enable this flag to loop the video analysis.
+- `--exercise`: Type of analyzing exercise
+
+Optional arguments:
+- `-o`, `--output`: Path for output data (CSV)
+- `--save_joints`: If joints should be saved or not
+- `--save_angles`: If angles should be saved or not
+- `--loop`: If video should be looped or not
+
 
 Example of running with a video file:
 
 ```bash
-python3 src/app/app.py -i path/to/video.mp4
+python3 src/app/app.py -i="path/to/video.mp4" --exercise="squat" --loop -o="squat.csv" --save_joints
 ```
 
 Example of running with a webcam:
 
 ```bash
-python3 src/app/app.py -i 0
+python3 src/app/app.py -i=0 --exercise="squat" -o="squat.csv" --save_angles
 ```
 
 To loop the video:
 
 ```bash
-python3 src/app/app.py -i path/to/video.mp4 --loop
+python3 src/app/app.py -i="path/to/video.mp4" --exercise="squat" --loop
 ```
 
 ## Configuration

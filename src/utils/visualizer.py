@@ -1,7 +1,3 @@
-import matplotlib
-
-matplotlib.use("TkAgg")
-
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
@@ -33,18 +29,18 @@ class Visualizer:
         return self.__exercise_phase
 
     @phase.setter
-    def phase(self, phase: str):
+    def phase(self, phase: str) -> None:
         if phase:
             self.__exercise_phase = phase
 
-    def update_figure(self, joints: np.ndarray, angles: dict[str, float]) -> None:
+    def update_figure(self, joints: np.ndarray, angles: dict) -> None:
         self.__restart_figure()
         important_joints = self.__prepare_joints_for_plotting(joints)
 
         self.__plot_joints(important_joints)
         self.__plot_connections(important_joints)
-        for index, (joint_name, angle) in enumerate(angles.items()):
-            angle_text = f"{joint_name}: {angle:.2f}°"
+        for index, (angle_name, angle) in enumerate(angles.items()):
+            angle_text = f"{angle_name}: {angle:.2f}°"
             self.__add_text(
                 angle_text,
                 (X_LIM[0] - 1),
@@ -119,5 +115,5 @@ class Visualizer:
 
     @staticmethod
     def __prepare_joints_for_plotting(joints: np.ndarray) -> np.ndarray:
-        mask = [joint[3] >= 0.2 for joint in joints]
+        mask = [joint[3] >= 0.1 for joint in joints]
         return joints[mask]

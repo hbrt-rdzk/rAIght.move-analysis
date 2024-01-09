@@ -38,4 +38,4 @@ pose_landmarker:
     left_hip: [11, 23, 25]
     right_hip: [12, 24, 26]
 
-joints_output_path: results
+output_path: results
