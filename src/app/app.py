@@ -2,9 +2,11 @@ import argparse
 
 import cv2
 import mediapipe as mp
+import numpy as np
 
-from src.processors.angle_handler import AnglesHandler
-from src.processors.joint_handler import JointsHandler
+from src.processors.angles.angle_handler import AnglesHandler
+from src.processors.joints.joint_handler import JointsHandler
+from src.processors.repetitions.repetitions_handler import RepetitionsHandler
 from src.utils.visualizer import Visualizer
 
 
@@ -16,14 +18,12 @@ def parse_arguments() -> argparse.Namespace:
         "-i",
         "--input",
         help="Camera numer or path to video",
-        default=0,
         type=lambda x: int(x) if x.isdigit() else x,
         required=True,
     )
     required.add_argument(
         "--exercise",
         help="Type of exercise",
-        default="squat",
         type=str,
         required=True,
     )
@@ -54,14 +54,14 @@ def parse_arguments() -> argparse.Namespace:
 
 def run(args) -> None:
     mp_pose = mp.solutions.pose
-    mp_drawing = mp.solutions.drawing_utils
     pose = mp_pose.Pose(
         min_detection_confidence=0.5, min_tracking_confidence=0.5, model_complexity=2
     )
 
-    visualizer = Visualizer("pose_landmarker")
+    repetitions_handler = RepetitionsHandler(args.exercise)
     joints_handler = JointsHandler("pose_landmarker")
-    angles_handler = AnglesHandler("pose_landmarker", args.exercise)
+    angles_handler = AnglesHandler("pose_landmarker")
+    visualizer = Visualizer("pose_landmarker")
 
     cap = cv2.VideoCapture(args.input)
     cv2.namedWindow("Mediapipe", cv2.WINDOW_AUTOSIZE)
@@ -80,24 +80,34 @@ def run(args) -> None:
             else:
                 break
 
-        results = pose.process(frame).pose_landmarks
-        if results:
-            joints = joints_handler.load_data(results)
-            joints_handler.update(joints)
+        results = pose.process(frame)
+        landmarks = results.pose_landmarks
+        world_landmards = results.pose_world_landmarks
 
-            angles = angles_handler.load_data(joints)
+        if world_landmards:
+            # Joints processing
+            joints = joints_handler.load_data(world_landmards)
+            filtered_joints = joints_handler.filter(joints)
+            joints_handler.update(filtered_joints)
 
+            # Angle processing
+            angles = angles_handler.load_data(filtered_joints)
             angles_handler.update(angles)
-            visualizer.phase = angles_handler.get_exercise_phase()
-            visualizer.update_figure(joints, angles)
 
-        mp_drawing.draw_landmarks(
-            frame,
-            results,
-            mp_pose.POSE_CONNECTIONS,
-            mp_drawing.DrawingSpec(color=(2, 82, 212), thickness=6, circle_radius=6),
-            mp_drawing.DrawingSpec(color=(245, 255, 230), thickness=4, circle_radius=6),
-        )
+            # Exercise state
+            progress = repetitions_handler.load_data(angles)
+            repetitions_handler.update(progress)
+
+            # Updating window
+            visualizer.update_figure(
+                filtered_joints,
+                angles,
+                repetitions_handler.repetitions,
+                repetitions_handler.progress,
+            )
+
+        visualizer.draw_landmarks(frame, landmarks, mp_pose.POSE_CONNECTIONS)
+
         cv2.imshow("Mediapipe", frame)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break

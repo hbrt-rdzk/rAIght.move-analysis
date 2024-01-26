@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 import numpy as np
 import yaml
@@ -15,7 +16,7 @@ class DataHandler(ABC):
         self._frames_counter = 0
 
     @abstractmethod
-    def load_data(self, data) -> np.ndarray:
+    def load_data(self, data) -> Any:
         ...
 
     @abstractmethod

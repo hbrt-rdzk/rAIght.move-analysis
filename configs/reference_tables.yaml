@@ -1,40 +1,8 @@
 squat:
   phases:
-    up:
-      right_knee: [180, 150]
-      left_knee: [180, 150]
-    mid:
-      right_knee: [125, 110]
-      left_knee: [125, 110]
-    down:
-      right_knee: [65, 50]
-      left_knee: [65, 50]
-
-  reference_angles:
-    start/end:
-      left_knee: 179.39
-      right_knee: 178.88
-      left_elbow: 159.37
-      right_elbow: 141.08
-      left_shoulder: 155.55
-      right_shoulder: 156.20
-      left_hip: 172.86
-      right_hip: 170.28
-    going_down/up:
-      left_knee: 118.66
-      right_knee: 111.33
-      left_elbow: 144.55
-      right_elbow: 165.74
-      left_shoulder: 152.78
-      right_shoulder: 31.26
-      left_hip: 106.16
-      right_hip: 105.52
-    down:
-      left_knee: 59.36
-      right_knee: 53.35
-      left_elbow: 138.41
-      right_elbow: 159.39
-      left_shoulder: 88.61
-      right_shoulder: 101.64
-      left_hip: 39.98
-      right_hip: 34.56
+    start:
+      right_knee: 165
+      left_knee: 165 
+    finish:
+      right_knee: 90
+      left_knee: 90

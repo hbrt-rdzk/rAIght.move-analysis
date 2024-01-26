@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import pandas as pd
+from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 
 from src.processors.abstract_handler import DataHandler
 
@@ -16,15 +17,13 @@ class JointsHandler(DataHandler):
         """Joints as list of numpy arrays"""
         self.joints = []
 
-    def load_data(self, data) -> np.ndarray:
-        joint_ids = list(map(int, self.__joint_names.keys()))
-        joints = np.array(
+    def load_data(self, data: NormalizedLandmarkList) -> np.ndarray:
+        return np.array(
             [
                 np.array([joint.x, joint.y, joint.z, joint.visibility, idx])
                 for idx, joint in enumerate(data.landmark)
             ]
         )
-        return joints[np.isin(joints[:, -1].astype(int), joint_ids)]
 
     def update(self, data: np.ndarray) -> None:
         self.joints.append(data)
@@ -48,3 +47,7 @@ class JointsHandler(DataHandler):
         joints_df["joint_id"] = joints_df["joint_id"].astype(int)
 
         joints_df.to_csv(output_path, index=False)
+
+    def filter(self, joints: np.ndarray) -> np.ndarray:
+        joint_ids = list(map(int, self.__joint_names.keys()))
+        return joints[np.isin(joints[:, -1].astype(int), joint_ids)]
