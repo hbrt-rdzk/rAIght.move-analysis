@@ -8,7 +8,7 @@ CONFIG_PATH = "configs/config.yaml"
 REFERENCE_TABLE_PATH = "configs/reference_tables.yaml"
 
 
-class DataHandler(ABC):
+class DataProcessor(ABC):
     def __init__(self) -> None:
         self._config_data = self.__load_yaml_file(CONFIG_PATH)
         self._reference_table = self.__load_yaml_file(REFERENCE_TABLE_PATH)

@@ -2,11 +2,10 @@ import argparse
 
 import cv2
 import mediapipe as mp
-import numpy as np
 
-from src.processors.angles.angle_handler import AnglesHandler
-from src.processors.joints.joint_handler import JointsHandler
-from src.processors.repetitions.repetitions_handler import RepetitionsHandler
+from src.processors.angles.angles_processor import AnglesProcessor
+from src.processors.joints.joints_processor import JointsProcessor
+from src.processors.repetitions.repetitions_processor import RepetitionsProcessor
 from src.utils.visualizer import Visualizer
 
 
@@ -54,13 +53,11 @@ def parse_arguments() -> argparse.Namespace:
 
 def run(args) -> None:
     mp_pose = mp.solutions.pose
-    pose = mp_pose.Pose(
-        min_detection_confidence=0.5, min_tracking_confidence=0.5, model_complexity=2
-    )
+    pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-    repetitions_handler = RepetitionsHandler(args.exercise)
-    joints_handler = JointsHandler("pose_landmarker")
-    angles_handler = AnglesHandler("pose_landmarker")
+    repetitions_handler = RepetitionsProcessor(args.exercise)
+    joints_handler = JointsProcessor("pose_landmarker")
+    angles_handler = AnglesProcessor("pose_landmarker")
     visualizer = Visualizer("pose_landmarker")
 
     cap = cv2.VideoCapture(args.input)
@@ -102,8 +99,9 @@ def run(args) -> None:
             visualizer.update_figure(
                 filtered_joints,
                 angles,
+                progress,
                 repetitions_handler.repetitions,
-                repetitions_handler.progress,
+                repetitions_handler.state,
             )
 
         visualizer.draw_landmarks(frame, landmarks, mp_pose.POSE_CONNECTIONS)

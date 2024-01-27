@@ -1,9 +1,9 @@
 import numpy as np
 
-from src.processors.abstract_handler import DataHandler
+from src.processors.abstract_processor import DataProcessor
 
 
-class RepetitionsHandler(DataHandler):
+class RepetitionsProcessor(DataProcessor):
     def __init__(self, exercise: str) -> None:
         super().__init__()
         self.__exercise_phases = self._reference_table[exercise]["phases"]
@@ -11,7 +11,6 @@ class RepetitionsHandler(DataHandler):
         self.finish_angles = self.__exercise_phases["finish"]
 
         self.repetitions = 0
-        self.progress = 0.0
         self.state = "up"
 
     def load_data(self, data: dict) -> list:
@@ -34,8 +33,6 @@ class RepetitionsHandler(DataHandler):
         return np.clip(progress_normalized, 0, 1)
 
     def update(self, progress) -> None:
-        self.progress = progress
-
         if progress >= 1.0 and self.state == "up":
             self.state = "down"
         elif progress <= 0.0 and self.state == "down":

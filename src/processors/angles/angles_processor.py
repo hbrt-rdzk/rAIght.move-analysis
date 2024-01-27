@@ -3,10 +3,10 @@ import os
 import numpy as np
 import pandas as pd
 
-from src.processors.abstract_handler import DataHandler
+from src.processors.abstract_processor import DataProcessor
 
 
-class AnglesHandler(DataHandler):
+class AnglesProcessor(DataProcessor):
     def __init__(self, model: str) -> None:
         super().__init__()
         self.__angle_names = self._config_data[model]["angles"]

@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd
 from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 
-from src.processors.abstract_handler import DataHandler
+from src.processors.abstract_processor import DataProcessor
 
 OUTPUT_COLUMNS = ("x", "y", "z", "visibility", "joint_id")
 
 
-class JointsHandler(DataHandler):
+class JointsProcessor(DataProcessor):
     def __init__(self, model: str) -> None:
         super().__init__()
         self.__joint_names = self._config_data[model]["joints"]
