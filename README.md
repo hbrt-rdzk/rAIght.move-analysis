@@ -2,7 +2,7 @@
 
 move.rAIght is an AI-powered tool designed to help you analyze and improve your workout form with real-time feedback. Using advanced pose estimation technology, this gym assistant evaluates your form during exercises such as squats and bench presses, ensuring that you get the most out of your workout safely and effectively.
 
-![squat](https://github.com/hbrt-rdzk/move.rAIght/assets/123837698/8dfd81d7-308f-49cc-842e-01d9443408e8)
+![squat](https://github.com/hbrt-rdzk/move.rAIght/assets/123837698/b30321df-d357-424a-9f5f-6343b4a85e0e)
 
 ## Getting Started
 
