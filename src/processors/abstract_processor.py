@@ -1,7 +1,8 @@
+import datetime
+import os
 from abc import ABC, abstractmethod
 from typing import Any
 
-import numpy as np
 import yaml
 
 CONFIG_PATH = "configs/config.yaml"
@@ -13,7 +14,8 @@ class DataProcessor(ABC):
         self._config_data = self.__load_yaml_file(CONFIG_PATH)
         self._reference_table = self.__load_yaml_file(REFERENCE_TABLE_PATH)
         self._results_path = self._config_data["output_path"]
-        self._frames_counter = 0
+
+        self.data = []
 
     @abstractmethod
     def load_data(self, data) -> Any:
@@ -24,10 +26,10 @@ class DataProcessor(ABC):
         ...
 
     @abstractmethod
-    def save(self, output_path: str) -> None:
+    def save(self, output_dir: str) -> None:
         ...
 
-    def __load_yaml_file(self, file_path):
+    def __load_yaml_file(self, file_path) -> dict:
         try:
             with open(file_path) as file:
                 return yaml.safe_load(file)
@@ -35,3 +37,15 @@ class DataProcessor(ABC):
             raise FileNotFoundError(f"File not found: {error.filename}") from None
         except yaml.YAMLError as error:
             raise ValueError(f"Error parsing YAML file: {error}") from None
+
+    def _validate_output(self, output_dir: str) -> str:
+        current_time = datetime.datetime.now()
+        output_subdir = datetime.datetime.strftime(current_time, "%Y-%m-%d_%H:%M:%S")
+
+        if not self.data:
+            raise ValueError("No data to save.")
+
+        output_dir = os.path.join(output_dir, output_subdir)
+        os.makedirs(output_dir, exist_ok=True)
+
+        return output_dir

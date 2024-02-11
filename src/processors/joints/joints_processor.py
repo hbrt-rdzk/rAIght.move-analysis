@@ -10,12 +10,11 @@ OUTPUT_COLUMNS = ("x", "y", "z", "visibility", "joint_id")
 
 
 class JointsProcessor(DataProcessor):
+    """Joints as list of numpy arrays"""
+
     def __init__(self, model: str) -> None:
         super().__init__()
         self.__joint_names = self._config_data[model]["joints"]
-
-        """Joints as list of numpy arrays"""
-        self.joints = []
 
     def load_data(self, data: NormalizedLandmarkList) -> np.ndarray:
         return np.array(
@@ -26,17 +25,13 @@ class JointsProcessor(DataProcessor):
         )
 
     def update(self, data: np.ndarray) -> None:
-        self.joints.append(data)
-        self._frames_counter += 1
+        self.data.append(data)
 
-    def save(self, output: str) -> None:
-        if not self.joints:
-            raise ValueError("No joints data to save.")
+    def save(self, output_dir: str) -> None:
+        output = self._validate_output(output_dir)
 
-        os.makedirs(self._results_path, exist_ok=True)
-        output_path = os.path.join(self._results_path, "joints_" + output)
-        frames_num = self.joints[0].shape[0]
-        joints_ = np.concatenate(self.joints)
+        frames_num = self.data[0].shape[0]
+        joints_ = np.concatenate(self.data)
 
         joints_df = pd.DataFrame(joints_, columns=OUTPUT_COLUMNS)
         frames_series = pd.Series(
@@ -46,7 +41,8 @@ class JointsProcessor(DataProcessor):
         joints_df = pd.concat([frames_series, joints_df], axis=1)
         joints_df["joint_id"] = joints_df["joint_id"].astype(int)
 
-        joints_df.to_csv(output_path, index=False)
+        results_path = os.path.join(output, "joints.csv")
+        joints_df.to_csv(results_path, index=False)
 
     def filter(self, joints: np.ndarray) -> np.ndarray:
         joint_ids = list(map(int, self.__joint_names.keys()))

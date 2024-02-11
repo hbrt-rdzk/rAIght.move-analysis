@@ -1,6 +1,11 @@
+import os
+
 import numpy as np
+import pandas as pd
 
 from src.processors.abstract_processor import DataProcessor
+
+OUTPUT_COLUMN = ["repetitions_count"]
 
 
 class RepetitionsProcessor(DataProcessor):
@@ -10,7 +15,7 @@ class RepetitionsProcessor(DataProcessor):
         self.start_angles = self.__exercise_phases["start"]
         self.finish_angles = self.__exercise_phases["finish"]
 
-        self.repetitions = 0
+        self.repetitions_count = 0
         self.state = "up"
 
     def load_data(self, data: dict) -> list:
@@ -36,8 +41,14 @@ class RepetitionsProcessor(DataProcessor):
         if progress >= 1.0 and self.state == "up":
             self.state = "down"
         elif progress <= 0.0 and self.state == "down":
-            self.repetitions += 1
+            self.repetitions_count += 1
             self.state = "up"
 
-    def save(self) -> None:
-        ...
+        self.data.append(self.repetitions_count)
+
+    def save(self, output_dir: str) -> None:
+        output = super()._validate_output(output_dir)
+
+        repetitions_df = pd.DataFrame(self.data, columns=OUTPUT_COLUMN)
+        results_path = os.path.join(output, "repetitions.csv")
+        repetitions_df.to_csv(results_path, index=True, index_label="frame")
