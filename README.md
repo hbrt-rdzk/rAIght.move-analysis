@@ -42,37 +42,36 @@ pip install -r requirements.txt
 To run the Gym Assistant, use the following command:
 
 ```bash
-python3 src/app/app.py
+python3 src/cli.py
 ```
 
 You have to provide the following arguments:
 
+- `-a`, `--app`: One of the app types (LIVE, VIDEO)
 - `-i`, `--input`: Specify the camera number or path to the video file you wish to analyze.
 - `--exercise`: Type of analyzing exercise
 
 Optional arguments:
-- `-o`, `--output`: Path for output data (CSV)
-- `--save_joints`: If joints should be saved or not
-- `--save_angles`: If angles should be saved or not
+- `-o`, `--output`: Directory path for output data (CSV)
+- `--save_results`: If data should be saved or not
 - `--loop`: If video should be looped or not
 
 
 Example of running with a video file:
 
 ```bash
-python3 src/app/app.py -i="path/to/video.mp4" --exercise="squat" --loop -o="squat.csv" --save_joints
+python3 src/cli.py --app="LIVE" -i="path/to/video.mp4" --exercise="squat" --loop --save_results
 ```
 
 Example of running with a webcam:
 
 ```bash
-python3 src/app/app.py -i=0 --exercise="squat" -o="squat.csv" --save_angles
+python3 src/cli.py --app="LIVE" -i=0 --exercise="squat" -o="squat.csv" --save_results
 ```
 
 To loop the video:
-
 ```bash
-python3 src/app/app.py -i="path/to/video.mp4" --exercise="squat" --loop
+python3 src/cli.py --app="LIVE" -i="path/to/video.mp4" --exercise="squat" --loop
 ```
 
 ## Configuration
