@@ -1,8 +1,8 @@
 import argparse
 from enum import Enum
 
-from app.live.live import LiveAnalysisApp
-from app.video.video import VideoAnalysisApp
+from app.live_analysis import LiveAnalysisApp
+from app.video_analysis import VideoAnalysisApp
 
 
 class AppTypes(Enum):
@@ -59,7 +59,7 @@ def main():
         app = app_type.value()
     except KeyError:
         raise ValueError("Invalid app type")
-    app.run(args)
+    app.run(args.input, args.exercise, args.output, args.save_results, args.loop)
 
 
 if __name__ == "__main__":
