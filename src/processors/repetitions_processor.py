@@ -22,6 +22,9 @@ class RepetitionsProcessor(DataProcessor):
         self.repetitions_count = 0
         self.state = "up"
 
+    def __str__(self) -> str:
+        return f"{self.repetitions_count} repetitions"
+
     def load_data(self, data: dict) -> list:
         reference_angle_names = [angle_name for angle_name in self.start_angles.keys()]
         start_reference_angles = np.array(

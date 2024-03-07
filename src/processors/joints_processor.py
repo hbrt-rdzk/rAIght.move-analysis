@@ -16,6 +16,11 @@ class JointsProcessor(DataProcessor):
         super().__init__()
         self.__joint_names = self._config_data[model]["joints"]
 
+    def __str__(self) -> str:
+        frames_num = len(self.data)
+        features_per_frame = len(self.data[0])
+        return f"{frames_num * features_per_frame * 3} joint features"
+
     def load_data(self, data: NormalizedLandmarkList) -> np.ndarray:
         return np.array(
             [

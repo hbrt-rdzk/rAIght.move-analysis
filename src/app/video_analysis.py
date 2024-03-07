@@ -40,22 +40,21 @@ class VideoAnalysisApp(App):
                 self._angles_processor.update(angles)
 
         cap.release()
-        self.logger.info("Finished features extraction.")
 
-        self.logger.info("Starting video segmentation...")
-        reps_finish_frames = self.segment_video(self._angles_processor.data)
-        self.logger.info("Finished video segmentation.")
+        frames_num = len(self._angles_processor.data)
+        self.logger.info(
+            f"Analyzed {frames_num} frames, extracted {self._joints_processor} and {self._angles_processor}."
+        )
 
-        start_frame = 0
-        for rep, finish_frame in enumerate(reps_finish_frames):
+        segments = self.segment_video(self._angles_processor.data)
+        self.logger.info(f"Segmented video frames: {segments}")
+
+        for rep, segment in segments.items():
             self.logger.info(
-                f"Starting comparison with reference video for rep: {rep + 1}..."
+                f"Starting comparison with reference video for rep: {rep}..."
             )
-            rep_joints = self._joints_processor.data[start_frame:finish_frame]
 
-            start_frame = finish_frame
-
-    def segment_video(self, angles: list[dict]) -> list:
+    def segment_video(self, angles: list[dict]) -> dict:
         angles_df = pd.DataFrame(angles)
         important_features = angles_df.std().sort_values(ascending=False)[:4].keys()
         important_angles_df = angles_df[important_features]
@@ -64,7 +63,14 @@ class VideoAnalysisApp(App):
         important_angles_normalized_df = scaler.fit_transform(important_angles_df)
         exercise_signal = important_angles_normalized_df.sum(axis=1)
         zero_point = exercise_signal.mean()
-        return self.__get_breakpoints(exercise_signal, zero_point)[1::2]
+        breakpoints = self.__get_breakpoints(exercise_signal, zero_point)[1::2]
+
+        segments = {}
+        start_frame = 0
+        for rep, finish_frame in enumerate(breakpoints):
+            segments[f"rep_{rep + 1}"] = [start_frame, finish_frame]
+            start_frame = finish_frame
+        return segments
 
     @staticmethod
     def __get_breakpoints(

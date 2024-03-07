@@ -13,6 +13,11 @@ class AnglesProcessor(DataProcessor):
         super().__init__()
         self.__angle_names = self._config_data[model]["angles"]
 
+    def __str__(self) -> str:
+        frames_num = len(self.data)
+        features_per_frame = len(self.data[0])
+        return f"{frames_num * features_per_frame} angle features"
+
     def load_data(self, data: np.ndarray) -> dict[str, float]:
         return {
             angle_name: self.calculate_3D_angle(
