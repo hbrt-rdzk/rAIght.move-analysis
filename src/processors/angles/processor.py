@@ -3,10 +3,10 @@ import os
 import numpy as np
 import pandas as pd
 
-from src.processors.abstract_processor import DataProcessor
+from processors.base import Processor
 
 
-class AnglesProcessor(DataProcessor):
+class AnglesProcessor(Processor):
     """Angles as list of dicts"""
 
     def __init__(self, model: str) -> None:

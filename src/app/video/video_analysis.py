@@ -1,9 +1,14 @@
+import os
+
 import cv2
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-from src.app.abstract_app import App
+from app.base import App
+from src.utils.dtw import DTW
+
+PATH_TO_REFERENCE = "data/{exercise}/features/reference_{exercise}"
 
 
 class VideoAnalysisApp(App):
@@ -11,10 +16,17 @@ class VideoAnalysisApp(App):
     More advanced whole video analysis.
     """
 
-    def run(
-        self, input: str, exercise: str, output: str, save_results: bool, loop: bool
-    ) -> None:
+    def __init__(self, exercise: str):
+        super().__init__(exercise)
+        self.reference_angles = pd.read_csv(
+            os.path.join(
+                PATH_TO_REFERENCE.format(exercise=self._exercise), "angles.csv"
+            )
+        )
+
+    def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
         cap = cv2.VideoCapture(input)
+        dtw = DTW()
 
         if not cap.isOpened():
             self.logger.critical("Error on opening video stream or file!")
@@ -53,10 +65,13 @@ class VideoAnalysisApp(App):
             self.logger.info(
                 f"Starting comparison with reference video for rep: {rep}..."
             )
+            query = self._angles_processor.data[segment[0] : segment[1]]
+            # TODO: comparison between reference and query video
+            # results = dtw(query, self.reference_angles)
 
     def segment_video(self, angles: list[dict]) -> dict:
         angles_df = pd.DataFrame(angles)
-        important_features = angles_df.std().sort_values(ascending=False)[:4].keys()
+        important_features = angles_df.std().sort_values(ascending=False)[:2].keys()
         important_angles_df = angles_df[important_features]
 
         scaler = MinMaxScaler()

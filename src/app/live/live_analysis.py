@@ -1,8 +1,8 @@
 import cv2
 import mediapipe as mp
 
-from src.app.abstract_app import App
-from src.processors.repetitions_processor import RepetitionsProcessor
+from app.base import App
+from processors.repetitions.processor import RepetitionsProcessor
 
 
 class LiveAnalysisApp(App):
@@ -10,11 +10,11 @@ class LiveAnalysisApp(App):
     Real-time angles visualization and reps countning.
     """
 
-    def run(
-        self, input: str, exercise: str, output: str, save_results: bool, loop: bool
-    ) -> None:
-        repetitions_processor = RepetitionsProcessor(exercise)
+    def __init__(self, exercise: str):
+        super().__init__(exercise)
+        self.repetitions_processor = RepetitionsProcessor(self._exercise)
 
+    def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
         cap = cv2.VideoCapture(input)
         cv2.namedWindow("Mediapipe", cv2.WINDOW_AUTOSIZE)
         cv2.moveWindow("Mediapipe", 0, -100)
@@ -47,16 +47,16 @@ class LiveAnalysisApp(App):
                 self._angles_processor.update(angles)
 
                 # Exercise state
-                progress = repetitions_processor.load_data(angles)
-                repetitions_processor.update(progress)
+                progress = self.repetitions_processor.load_data(angles)
+                self.repetitions_processor.update(progress)
 
                 # Updating window
                 self._visualizer.update_figure(
                     filtered_joints,
                     angles,
                     progress,
-                    repetitions_processor.repetitions_count,
-                    repetitions_processor.state,
+                    self.repetitions_processor.repetitions_count,
+                    self.repetitions_processor.state,
                 )
                 self._visualizer.draw_landmarks(
                     frame, landmarks, self._mp_pose.POSE_CONNECTIONS
@@ -73,6 +73,6 @@ class LiveAnalysisApp(App):
             try:
                 self._joints_processor.save(output)
                 self._angles_processor.save(output)
-                repetitions_processor.save(output)
+                self.repetitions_processor.save(output)
             except ValueError as error:
                 self.logger.critical(f"Error on trying to save results:\n{error}")

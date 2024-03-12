@@ -3,12 +3,12 @@ import os
 import numpy as np
 import pandas as pd
 
-from src.processors.abstract_processor import DataProcessor
+from processors.base import Processor
 
 OUTPUT_COLUMN = ["repetitions_count"]
 
 
-class RepetitionsProcessor(DataProcessor):
+class RepetitionsProcessor(Processor):
     """
     Reps stored in classic list
     """

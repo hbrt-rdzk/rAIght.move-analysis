@@ -4,15 +4,15 @@ from abc import ABC, abstractmethod
 
 import mediapipe as mp
 
-from processors.angles_processor import AnglesProcessor
-from processors.joints_processor import JointsProcessor
+from processors.angles.processor import AnglesProcessor
+from processors.joints.processor import JointsProcessor
 from src.utils.visualizer import Visualizer
 
 POSE_ESTIMATION_MODEL = "pose_landmarker"
 
 
 class App(ABC):
-    def __init__(self):
+    def __init__(self, exercise: str):
         super().__init__()
         self.__set_logging()
 
@@ -25,10 +25,10 @@ class App(ABC):
         self._angles_processor = AnglesProcessor(POSE_ESTIMATION_MODEL)
         self._visualizer = Visualizer(POSE_ESTIMATION_MODEL)
 
+        self._exercise = exercise
+
     @abstractmethod
-    def run(
-        self, input: str, exercise: str, output: str, save_results: bool, loop: bool
-    ) -> None:
+    def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
         ...
 
     def __set_logging(self) -> None:

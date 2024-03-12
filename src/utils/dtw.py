@@ -12,7 +12,7 @@ class DTW:
         pass
 
     def __call__(
-        self, query: np.ndarray, reference: np.ndarray, *args: Any, **kwds: Any
+        self, query: np.ndarray, reference: np.ndarray, *args: Any, **kwargs: Any
     ) -> Any:
         alignment = dtw(query, reference, keep_internals=True)
         return alignment
