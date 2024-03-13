@@ -1,7 +1,10 @@
 import cv2
 
 from src.app.base import App
+from src.processors.angles.processor import AnglesProcessor
+from src.processors.joints.processor import JointsProcessor
 from src.processors.repetitions.processor import RepetitionsProcessor
+from src.utils.visualizer import Visualizer
 
 
 class LiveAnalysisApp(App):
@@ -11,9 +14,14 @@ class LiveAnalysisApp(App):
 
     def __init__(self, exercise: str) -> None:
         super().__init__(exercise)
-        self.repetitions_processor = RepetitionsProcessor(self._exercise)
 
     def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
+        joints_processor = JointsProcessor(self._pose_estimation_model_name)
+        angles_processor = AnglesProcessor(self._pose_estimation_model_name)
+        repetitions_processor = RepetitionsProcessor(self.exercise)
+
+        visualizer = Visualizer(self._pose_estimation_model_name)
+
         cap = cv2.VideoCapture(input)
         cv2.namedWindow("Mediapipe", cv2.WINDOW_AUTOSIZE)
         cv2.moveWindow("Mediapipe", 0, -100)
@@ -37,26 +45,26 @@ class LiveAnalysisApp(App):
 
             if world_landmards:
                 # Joints processing
-                joints = self._joints_processor.process(world_landmards)
-                self._joints_processor.update(joints)
+                joints = joints_processor.process(world_landmards)
+                joints_processor.update(joints)
 
                 # Angle processing
-                angles = self._angles_processor.process(joints)
-                self._angles_processor.update(angles)
+                angles = angles_processor.process(joints)
+                angles_processor.update(angles)
 
                 # Exercise state
-                progress = self.repetitions_processor.process(angles)
-                self.repetitions_processor.update(progress)
+                progress = repetitions_processor.process(angles)
+                repetitions_processor.update(progress)
 
                 # Updating window
-                self._visualizer.update_figure(
+                visualizer.update_figure(
                     joints,
                     angles,
                     progress,
-                    self.repetitions_processor.repetitions_count,
-                    self.repetitions_processor.state,
+                    repetitions_processor.repetitions_count,
+                    repetitions_processor.state,
                 )
-                self._visualizer.draw_landmarks(
+                visualizer.draw_landmarks(
                     frame, landmarks, self._mp_pose.POSE_CONNECTIONS
                 )
 
@@ -69,8 +77,8 @@ class LiveAnalysisApp(App):
 
         if save_results:
             try:
-                self._joints_processor.save(output)
-                self._angles_processor.save(output)
-                self.repetitions_processor.save(output)
+                joints_processor.save(output)
+                angles_processor.save(output)
+                repetitions_processor.save(output)
             except ValueError as error:
                 self.logger.critical(f"Error on trying to save results:\n{error}")

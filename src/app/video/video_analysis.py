@@ -1,13 +1,12 @@
 import os
 
 import cv2
-import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 
 from src.app.base import App
-from src.processors.repetitions.segment import Segment
-from src.utils.dtw import DTW
+from src.processors.angles.processor import AnglesProcessor
+from src.processors.joints.processor import JointsProcessor
+from src.processors.segments.processor import SegmentsProcessor
 
 PATH_TO_REFERENCE = "data/{exercise}/features/reference_{exercise}"
 
@@ -20,14 +19,17 @@ class VideoAnalysisApp(App):
     def __init__(self, exercise: str) -> None:
         super().__init__(exercise)
         self.reference_angles = pd.read_csv(
-            os.path.join(
-                PATH_TO_REFERENCE.format(exercise=self._exercise), "angles.csv"
-            )
+            os.path.join(PATH_TO_REFERENCE.format(exercise=self.exercise), "angles.csv")
         )
 
     def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
+        joints_processor = JointsProcessor(self._pose_estimation_model_name)
+        angles_processor = AnglesProcessor(self._pose_estimation_model_name)
+
         cap = cv2.VideoCapture(input)
-        dtw = DTW()
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+        segments_processor = SegmentsProcessor(fps)
 
         if not cap.isOpened():
             self.logger.critical("Error on opening video stream or file!")
@@ -44,76 +46,36 @@ class VideoAnalysisApp(App):
 
             if world_landmards:
                 # Joints processing
-                joints = self._joints_processor.process(world_landmards)
-                self._joints_processor.update(joints)
+                joints = joints_processor.process(world_landmards)
+                joints_processor.update(joints)
 
                 # Angle processing
-                angles = self._angles_processor.process(joints)
-                self._angles_processor.update(angles)
-
+                angles = angles_processor.process(joints)
+                angles_processor.update(angles)
         cap.release()
 
-        frames_num = len(self._angles_processor.data)
-        # self.logger.info(
-        #     f"Analyzed {frames_num} frames, extracted {self._joints_processor} and {self._angles_processor}."
-        # )
+        frames_num = len(angles_processor.data)
+        analysis_info = (
+            f"Analyzed {frames_num} frames"
+            f", extracted {len(joints_processor)} joint feature and"
+            f" {len(angles_processor)} angle features."
+        )
+        self.logger.info(analysis_info)
 
-        segments = self.segment_video(self._angles_processor.data)
-        self.logger.info(f"Segmented video frames: {segments}")
+        segments = segments_processor.process(
+            data=(joints_processor.data, angles_processor.data)
+        )
+        segments_processor.update(segments)
+        print(segments)
+        segments_info = {
+            f"repetition {segment.repetition_index}": f"frames: [{segment.start_frame}; {segment.finish_frame}]"
+            for segment in segments
+        }
+        self.logger.info(f"Segmented video frames: {segments_info}")
 
-        for rep, segment in segments.items():
+        for segment in segments:
             self.logger.info(
-                f"Starting comparison with reference video for rep: {rep}..."
+                f"Starting comparison with reference video for rep: {segment.repetition_index}..."
             )
-            query = self._angles_processor.data[segment[0] : segment[1]]
             # TODO: comparison between reference and query video
-            # results = dtw(query, self.reference_angles)
-
-    def segment_video(self, angles: list[dict]) -> list[Segment]:
-        angles_df = pd.DataFrame(angles)
-        important_features = angles_df.std().sort_values(ascending=False)[:2].keys()
-        important_angles_df = angles_df[important_features]
-
-        scaler = MinMaxScaler()
-        important_angles_normalized_df = scaler.fit_transform(important_angles_df)
-        exercise_signal = important_angles_normalized_df.sum(axis=1)
-        zero_point = exercise_signal.mean()
-        breakpoints = self.__get_breakpoints(exercise_signal, zero_point)[1::2]
-
-        segments = {}
-        start_frame = 0
-        for rep, finish_frame in enumerate(breakpoints):
-            segments[f"rep_{rep + 1}"] = [start_frame, finish_frame]
-            start_frame = finish_frame
-        return segments
-
-    @staticmethod
-    def __get_breakpoints(
-        signal: np.ndarray,
-        zero_point: float,
-        sliding_window_size: int = 5,
-        stride: int = 1,
-        tolerance: float = 0.1,
-    ) -> list:
-        state = "up"
-        breakpoints = []
-        for idx in range(0, len(signal) - sliding_window_size + 1, stride):
-            window = signal[idx : idx + sliding_window_size]
-
-            if state == "up":
-                if (
-                    abs(np.std(window) - 0.1) < tolerance
-                    and np.mean(window) < zero_point
-                ):
-                    state = "down"
-                    breakpoints.append(idx + sliding_window_size // 2)
-
-            elif state == "down":
-                if (
-                    abs(np.std(window) - 0.1) < tolerance
-                    and np.mean(window) > zero_point
-                ):
-                    state = "up"
-                    breakpoints.append(idx + sliding_window_size // 2)
-
-        return breakpoints
+            # results = segment.compare_with_reference()

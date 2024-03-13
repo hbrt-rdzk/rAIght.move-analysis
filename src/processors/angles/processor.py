@@ -13,6 +13,9 @@ class AnglesProcessor(Processor):
         super().__init__()
         self.__angle_names = self._config_data[model]["angles"]
 
+    def __len__(self) -> int:
+        return len(self.data) * len(self.data[0]) * 2
+
     def process(self, data: list[Joint]) -> list[Angle]:
         joint_dict = {joint.id: [joint.x, joint.y, joint.z] for joint in data}
 
@@ -29,15 +32,18 @@ class AnglesProcessor(Processor):
 
     def save(self, output_dir: str) -> None:
         output = self._validate_output(output_dir)
-        angles = [
-            {angle.name: angle.value for angle in frame_angles}
-            for frame_angles in self.data
-        ]
-
-        angles_df = pd.DataFrame.from_dict(angles)
+        angles_df = self.__to_df()
 
         results_path = os.path.join(output, "angles.csv")
         angles_df.to_csv(results_path, index=True, index_label="frame")
+
+    def __to_df(self) -> pd.DataFrame:
+        return pd.DataFrame(
+            [
+                {angle.name: angle.value for angle in frame_angles}
+                for frame_angles in self.data
+            ]
+        )
 
     @staticmethod
     def calculate_3D_angle(A: np.ndarray, B: np.ndarray, C: np.ndarray) -> float:
