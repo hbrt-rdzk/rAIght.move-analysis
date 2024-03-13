@@ -1,6 +1,6 @@
 from src.processors.angles.angle import Angle
 from src.processors.joints.joint import Joint
-from src.utils.dtw import DTW
+from src.processors.segments.segment import Segment
 
 
 class Segment:
@@ -22,6 +22,5 @@ class Segment:
         self.joints = joints
         self.angles = angles
 
-    def compare_with_reference(self, reference):
-        # dtw()
-        pass
+    def compare_with_reference(self, reference: Segment) -> list:
+        ...

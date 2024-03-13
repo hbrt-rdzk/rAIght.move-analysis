@@ -66,7 +66,7 @@ class VideoAnalysisApp(App):
             data=(joints_processor.data, angles_processor.data)
         )
         segments_processor.update(segments)
-        print(segments)
+
         segments_info = {
             f"repetition {segment.repetition_index}": f"frames: [{segment.start_frame}; {segment.finish_frame}]"
             for segment in segments
