@@ -1,8 +1,7 @@
 import cv2
-import mediapipe as mp
 
-from app.base import App
-from processors.repetitions.processor import RepetitionsProcessor
+from src.app.base import App
+from src.processors.repetitions.processor import RepetitionsProcessor
 
 
 class LiveAnalysisApp(App):
@@ -10,7 +9,7 @@ class LiveAnalysisApp(App):
     Real-time angles visualization and reps countning.
     """
 
-    def __init__(self, exercise: str):
+    def __init__(self, exercise: str) -> None:
         super().__init__(exercise)
         self.repetitions_processor = RepetitionsProcessor(self._exercise)
 
@@ -38,21 +37,20 @@ class LiveAnalysisApp(App):
 
             if world_landmards:
                 # Joints processing
-                joints = self._joints_processor.load_data(world_landmards)
-                filtered_joints = self._joints_processor.filter(joints)
-                self._joints_processor.update(filtered_joints)
+                joints = self._joints_processor.process(world_landmards)
+                self._joints_processor.update(joints)
 
                 # Angle processing
-                angles = self._angles_processor.load_data(filtered_joints)
+                angles = self._angles_processor.process(joints)
                 self._angles_processor.update(angles)
 
                 # Exercise state
-                progress = self.repetitions_processor.load_data(angles)
+                progress = self.repetitions_processor.process(angles)
                 self.repetitions_processor.update(progress)
 
                 # Updating window
                 self._visualizer.update_figure(
-                    filtered_joints,
+                    joints,
                     angles,
                     progress,
                     self.repetitions_processor.repetitions_count,

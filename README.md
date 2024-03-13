@@ -42,7 +42,7 @@ pip install -r requirements.txt
 To run the Gym Assistant, use the following command:
 
 ```bash
-python3 src/cli.py
+python3 scripts/cli.py
 ```
 
 You have to provide the following arguments:
@@ -60,18 +60,18 @@ Optional arguments:
 Example of running with a video file:
 
 ```bash
-python3 src/cli.py --app="LIVE" -i="path/to/video.mp4" --exercise="squat" --loop --save_results
+python3 scripts/cli.py --app="LIVE" -i="path/to/video.mp4" --exercise="squat" --loop --save_results
 ```
 
 Example of running with a webcam:
 
 ```bash
-python3 src/cli.py --app="LIVE" -i=0 --exercise="squat" -o="squat.csv" --save_results
+python3 scripts/cli.py --app="LIVE" -i=0 --exercise="squat" -o="squat.csv" --save_results
 ```
 
 To loop the video:
 ```bash
-python3 src/cli.py --app="LIVE" -i="path/to/video.mp4" --exercise="squat" --loop
+python3 scripts/cli.py --app="LIVE" -i="path/to/video.mp4" --exercise="squat" --loop
 ```
 
 ## Configuration

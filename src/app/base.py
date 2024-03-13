@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 
 import mediapipe as mp
 
-from processors.angles.processor import AnglesProcessor
-from processors.joints.processor import JointsProcessor
+from src.processors.angles.processor import AnglesProcessor
+from src.processors.joints.processor import JointsProcessor
 from src.utils.visualizer import Visualizer
 
 POSE_ESTIMATION_MODEL = "pose_landmarker"

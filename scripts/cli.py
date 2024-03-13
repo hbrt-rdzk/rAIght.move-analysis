@@ -1,8 +1,8 @@
 import argparse
 from enum import Enum
 
-from app.live.live_analysis import LiveAnalysisApp
-from app.video.video_analysis import VideoAnalysisApp
+from src.app.live.live_analysis import LiveAnalysisApp
+from src.app.video.video_analysis import VideoAnalysisApp
 
 
 class AppTypes(Enum):

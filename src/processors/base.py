@@ -18,18 +18,18 @@ class Processor(ABC):
         self.data = []
 
     @abstractmethod
-    def load_data(self, data) -> Any:
+    def process(self, data: Any) -> Any:
         ...
 
     @abstractmethod
-    def update(self, data) -> None:
+    def update(self, data: Any) -> None:
         ...
 
     @abstractmethod
     def save(self, output_dir: str) -> None:
         ...
 
-    def __load_yaml_file(self, file_path) -> dict:
+    def __load_yaml_file(self, file_path: str) -> dict:
         try:
             with open(file_path) as file:
                 return yaml.safe_load(file)

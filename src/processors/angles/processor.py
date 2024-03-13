@@ -3,38 +3,38 @@ import os
 import numpy as np
 import pandas as pd
 
-from processors.base import Processor
+from src.processors.angles.angle import Angle
+from src.processors.base import Processor
+from src.processors.joints.joint import Joint
 
 
 class AnglesProcessor(Processor):
-    """Angles as list of dicts"""
-
     def __init__(self, model: str) -> None:
         super().__init__()
         self.__angle_names = self._config_data[model]["angles"]
 
-    def __str__(self) -> str:
-        frames_num = len(self.data)
-        features_per_frame = len(self.data[0])
-        return f"{frames_num * features_per_frame} angle features"
+    def process(self, data: list[Joint]) -> list[Angle]:
+        joint_dict = {joint.id: [joint.x, joint.y, joint.z] for joint in data}
 
-    def load_data(self, data: np.ndarray) -> dict[str, float]:
-        return {
-            angle_name: self.calculate_3D_angle(
-                data[data[:, 4] == joint_ids[0]][0, 0:3],
-                data[data[:, 4] == joint_ids[1]][0, 0:3],
-                data[data[:, 4] == joint_ids[2]][0, 0:3],
-            )
-            for angle_name, joint_ids in self.__angle_names.items()
-        }
+        angles = []
+        for angle_name, joint_ids in self.__angle_names.items():
+            coords = np.array([joint_dict[joint_id] for joint_id in joint_ids])
+            angle = self.calculate_3D_angle(*coords)
+            angles.append(Angle(angle_name, angle))
 
-    def update(self, data: dict[str, float]) -> None:
+        return angles
+
+    def update(self, data: list[Angle]) -> None:
         self.data.append(data)
 
     def save(self, output_dir: str) -> None:
         output = self._validate_output(output_dir)
+        angles = [
+            {angle.name: angle.value for angle in frame_angles}
+            for frame_angles in self.data
+        ]
 
-        angles_df = pd.DataFrame.from_dict(self.data)
+        angles_df = pd.DataFrame.from_dict(angles)
 
         results_path = os.path.join(output, "angles.csv")
         angles_df.to_csv(results_path, index=True, index_label="frame")

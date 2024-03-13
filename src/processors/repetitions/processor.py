@@ -3,16 +3,13 @@ import os
 import numpy as np
 import pandas as pd
 
-from processors.base import Processor
+from src.processors.angles.angle import Angle
+from src.processors.base import Processor
 
 OUTPUT_COLUMN = ["repetitions_count"]
 
 
 class RepetitionsProcessor(Processor):
-    """
-    Reps stored in classic list
-    """
-
     def __init__(self, exercise: str) -> None:
         super().__init__()
         self.__exercise_phases = self._reference_table[exercise]["phases"]
@@ -22,10 +19,7 @@ class RepetitionsProcessor(Processor):
         self.repetitions_count = 0
         self.state = "up"
 
-    def __str__(self) -> str:
-        return f"{self.repetitions_count} repetitions"
-
-    def load_data(self, data: dict) -> list:
+    def process(self, data: list[Angle]) -> list:
         reference_angle_names = [angle_name for angle_name in self.start_angles.keys()]
         start_reference_angles = np.array(
             [angle_name for angle_name in self.start_angles.values()]
@@ -35,7 +29,7 @@ class RepetitionsProcessor(Processor):
         )
 
         data_angles = np.array(
-            [data[angle_name] for angle_name in reference_angle_names]
+            [angle.value for angle in data if angle.name in reference_angle_names]
         )
 
         reference_progress = start_reference_angles[0] - finish_reference_angles[0]

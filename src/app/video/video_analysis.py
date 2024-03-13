@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-from app.base import App
+from src.app.base import App
+from src.processors.repetitions.segment import Segment
 from src.utils.dtw import DTW
 
 PATH_TO_REFERENCE = "data/{exercise}/features/reference_{exercise}"
@@ -16,7 +17,7 @@ class VideoAnalysisApp(App):
     More advanced whole video analysis.
     """
 
-    def __init__(self, exercise: str):
+    def __init__(self, exercise: str) -> None:
         super().__init__(exercise)
         self.reference_angles = pd.read_csv(
             os.path.join(
@@ -43,20 +44,19 @@ class VideoAnalysisApp(App):
 
             if world_landmards:
                 # Joints processing
-                joints = self._joints_processor.load_data(world_landmards)
-                filtered_joints = self._joints_processor.filter(joints)
-                self._joints_processor.update(filtered_joints)
+                joints = self._joints_processor.process(world_landmards)
+                self._joints_processor.update(joints)
 
                 # Angle processing
-                angles = self._angles_processor.load_data(filtered_joints)
+                angles = self._angles_processor.process(joints)
                 self._angles_processor.update(angles)
 
         cap.release()
 
         frames_num = len(self._angles_processor.data)
-        self.logger.info(
-            f"Analyzed {frames_num} frames, extracted {self._joints_processor} and {self._angles_processor}."
-        )
+        # self.logger.info(
+        #     f"Analyzed {frames_num} frames, extracted {self._joints_processor} and {self._angles_processor}."
+        # )
 
         segments = self.segment_video(self._angles_processor.data)
         self.logger.info(f"Segmented video frames: {segments}")
@@ -69,7 +69,7 @@ class VideoAnalysisApp(App):
             # TODO: comparison between reference and query video
             # results = dtw(query, self.reference_angles)
 
-    def segment_video(self, angles: list[dict]) -> dict:
+    def segment_video(self, angles: list[dict]) -> list[Segment]:
         angles_df = pd.DataFrame(angles)
         important_features = angles_df.std().sort_values(ascending=False)[:2].keys()
         important_angles_df = angles_df[important_features]

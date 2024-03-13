@@ -7,6 +7,9 @@ from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Poly3DCollection
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 
+from src.processors.angles.angle import Angle
+from src.processors.joints.joint import Joint
+
 ELEV = -90
 AZIM = -90
 X_LIM = (-1, 1)
@@ -46,34 +49,34 @@ class Visualizer:
         ax.view_init(elev=elev, azim=azim)
         return fig, ax
 
-    def __plot_joints(self, joints: np.ndarray) -> None:
+    def __plot_joints(self, joints: list[Joint]) -> None:
         self.axis.scatter3D(
-            xs=joints[:, 0],
-            ys=joints[:, 1],
-            zs=joints[:, 2],
+            xs=[joint.x for joint in joints],
+            ys=[joint.y for joint in joints],
+            zs=[joint.y for joint in joints],
         )
 
     def update_figure(
         self,
-        joints: np.ndarray,
-        angles: dict,
+        joints: list[Joint],
+        angles: list[Angle],
         progress: float,
         repetitions: int,
         state: str,
     ) -> None:
         self.__restart_figure()
-        important_joints = self.__prepare_joints_for_plotting(joints)
+        visible_joints = self.__prepare_joints_for_plotting(joints)
 
-        self.__plot_joints(important_joints)
-        self.__plot_connections(important_joints)
+        self.__plot_joints(visible_joints)
+        self.__plot_connections(visible_joints)
         self.__plot_progress_bar(progress)
         self.__add_text(f"Reps: {repetitions}", x=1.2, y=-1.2, z=0)
         self.__add_text(INSTRUCTION_MAPPER[state], x=0, y=-1.2, z=0)
 
-        for index, (angle_name, angle) in enumerate(angles.items()):
-            angle_text = f"{angle_name}: {angle:.2f}°"
+        for idx, angle in enumerate(angles):
+            angle_text = f"{angle.name}: {angle.value:.2f}°"
             x_position = X_LIM[0] - 1
-            y_position = index * 0.2 * Y_LIM[1] - 1
+            y_position = idx * 0.2 * Y_LIM[1] - 1
             z_position = Z_LIM[0]
             self.__add_text(angle_text, x_position, y_position, z_position)
 
@@ -93,17 +96,28 @@ class Visualizer:
             ),
         )
 
-    def __plot_connections(self, joints: np.ndarray) -> None:
+    def __plot_connections(self, joints: list[Joint]) -> None:
         for connection in self.config["connections"]["torso"]:
             joint_start, joint_end = connection
-            start_coords = joints[joints[:, 4] == joint_start]
-            end_coords = joints[joints[:, 4] == joint_end]
-            if len(start_coords) > 0 and len(end_coords) > 0:
-                self.axis.plot(
-                    xs=[start_coords[0, 0], end_coords[0, 0]],
-                    ys=[start_coords[0, 1], end_coords[0, 1]],
-                    zs=[start_coords[0, 2], end_coords[0, 2]],
+            try:
+                start_coords = next(
+                    (joint.x, joint.y, joint.z)
+                    for joint in joints
+                    if joint.id == joint_start
                 )
+                end_coords = next(
+                    (joint.x, joint.y, joint.z)
+                    for joint in joints
+                    if joint.id == joint_end
+                )
+            except StopIteration:
+                continue
+
+            self.axis.plot(
+                xs=[start_coords[0], end_coords[0]],
+                ys=[start_coords[1], end_coords[1]],
+                zs=[start_coords[2], end_coords[2]],
+            )
 
     def __plot_progress_bar(self, progress: float):
         poly_bar = Poly3DCollection([PROGRESS_BAR_VERTICES], alpha=0.5)
@@ -134,6 +148,5 @@ class Visualizer:
         self.axis.set_zlim3d(*Z_LIM)
 
     @staticmethod
-    def __prepare_joints_for_plotting(joints: np.ndarray) -> np.ndarray:
-        mask = [joint[3] >= 0.1 for joint in joints]
-        return joints[mask]
+    def __prepare_joints_for_plotting(joints: list[Joint]) -> list[Joint]:
+        return [joint for joint in joints if joint.visibility > 0.1]
