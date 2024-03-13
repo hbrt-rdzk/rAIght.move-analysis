@@ -20,15 +20,21 @@ class Processor(ABC):
 
     @abstractmethod
     def process(self, data: Any) -> Any:
-        ...
+        """
+        Process data flow
+        """
 
     @abstractmethod
     def update(self, data: Any) -> None:
-        ...
+        """
+        Update internals state of the object
+        """
 
     @abstractmethod
     def save(self, output_dir: str) -> None:
-        ...
+        """
+        Save state to static file
+        """
 
     def __load_yaml_file(self, file_path: str) -> dict:
         try:

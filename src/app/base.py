@@ -22,7 +22,9 @@ class App(ABC):
 
     @abstractmethod
     def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
-        ...
+        """
+        Run app's flow
+        """
 
     def __set_logging(self) -> None:
         self.logger = logging.getLogger(__name__)

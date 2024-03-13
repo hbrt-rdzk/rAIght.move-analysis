@@ -55,6 +55,7 @@ class SegmentsProcessor(Processor):
 
     def save(self, output_dir: str) -> None:
         ...
+        # TODO: save state to static file
 
     @staticmethod
     def __get_breakpoints(

@@ -4,7 +4,9 @@ from src.utils.dtw import DTW
 
 
 class Segment:
-    """Instance of one repetition timeframe"""
+    """
+    One repetition timeframe with it's data
+    """
 
     def __init__(
         self,
