@@ -8,13 +8,6 @@ move.rAIght is an AI-powered tool designed to help you analyze and improve your 
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
-### Prerequisites
-
-What things you need to install the software and how to install them:
-
-```bash
-pip install -r requirements.txt
-```
 ### Installing
 
 A step-by-step series of examples that tell you how to get a development environment running:
@@ -34,7 +27,7 @@ cd move.rAIght
 Install the necessary dependencies:
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
 ### Usage
