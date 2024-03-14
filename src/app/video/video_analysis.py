@@ -3,12 +3,13 @@ import os
 import cv2
 import pandas as pd
 
-from src.app.base import App
+from src.app.base import OUTPUT_PATH_FIELD, POSE_ESTIMATION_MODEL_NAME, App
 from src.processors.angles.processor import AnglesProcessor
 from src.processors.joints.processor import JointsProcessor
 from src.processors.segments.processor import SegmentsProcessor
+from src.processors.segments.segment import Segment
 
-PATH_TO_REFERENCE = "data/{exercise}/features/reference_{exercise}"
+PATH_TO_REFERENCE = "data/{exercise}/features/reference"
 
 
 class VideoAnalysisApp(App):
@@ -17,14 +18,28 @@ class VideoAnalysisApp(App):
     """
 
     def __init__(self, exercise: str) -> None:
-        super().__init__(exercise)
-        self.reference_angles = pd.read_csv(
-            os.path.join(PATH_TO_REFERENCE.format(exercise=self.exercise), "angles.csv")
+        super().__init__()
+        model_config_data = self._config_data[POSE_ESTIMATION_MODEL_NAME]
+        self.angle_names = model_config_data["angles"]
+        self.joint_names = model_config_data["joints"]
+        self.connections = model_config_data["connections"]["torso"]
+        reference_joints = pd.read_csv(
+            os.path.join(PATH_TO_REFERENCE.format(exercise=exercise), "joints.csv")
+        )
+        reference_angles = pd.read_csv(
+            os.path.join(PATH_TO_REFERENCE.format(exercise=exercise), "angles.csv")
+        )
+        self.reference_segment = Segment(
+            rep=0,
+            start_frame=0,
+            finish_frame=len(reference_angles),
+            joints=AnglesProcessor.from_df(reference_joints),
+            angles=JointsProcessor.from_df(reference_angles),
         )
 
     def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
-        joints_processor = JointsProcessor(self._pose_estimation_model_name)
-        angles_processor = AnglesProcessor(self._pose_estimation_model_name)
+        joints_processor = JointsProcessor(self.joint_names)
+        angles_processor = AnglesProcessor(self.angle_names)
 
         cap = cv2.VideoCapture(input)
         fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -78,4 +93,4 @@ class VideoAnalysisApp(App):
                 f"Starting comparison with reference video for rep: {segment.repetition_index}..."
             )
             # TODO: comparison between reference and query video
-            # results = segment.compare_with_reference()
+            # results = segments_processor.compare_with_reference(self.reference_segment)

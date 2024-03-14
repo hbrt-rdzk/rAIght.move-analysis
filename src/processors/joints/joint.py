@@ -13,3 +13,4 @@ class Joint:
     y: float
     z: float
     visibility: float
+    frame: int

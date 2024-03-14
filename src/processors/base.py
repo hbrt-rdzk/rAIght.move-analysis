@@ -3,28 +3,21 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any
 
-import yaml
-
-CONFIG_PATH = "configs/config.yaml"
-REFERENCE_TABLE_PATH = "configs/reference_tables.yaml"
+import pandas as pd
 
 
 class Processor(ABC):
     def __init__(self) -> None:
-        self._config_data = self.__load_yaml_file(CONFIG_PATH)
-        self._reference_table = self.__load_yaml_file(REFERENCE_TABLE_PATH)
-        self._results_path = self._config_data["output_path"]
-
         self.data = []
 
     @abstractmethod
-    def process(self, data: Any) -> Any:
+    def process(self, data: list[Any]) -> list[Any]:
         """
         Process data flow
         """
 
     @abstractmethod
-    def update(self, data: Any) -> None:
+    def update(self, data: list[Any]) -> None:
         """
         Update internals state of the object
         """
@@ -35,14 +28,19 @@ class Processor(ABC):
         Save state to static file
         """
 
-    def __load_yaml_file(self, file_path: str) -> dict:
-        try:
-            with open(file_path) as file:
-                return yaml.safe_load(file)
-        except FileNotFoundError as error:
-            raise FileNotFoundError(f"File not found: {error.filename}") from None
-        except yaml.YAMLError as error:
-            raise ValueError(f"Error parsing YAML file: {error}") from None
+    @staticmethod
+    @abstractmethod
+    def to_df(data: list[Any] | Any) -> pd.DataFrame:
+        """
+        Convert DataFrame object from data
+        """
+
+    @staticmethod
+    @abstractmethod
+    def from_df(data: pd.DataFrame) -> list[Any] | Any:
+        """
+        Convert list of objects from DataFrame
+        """
 
     def _validate_output(self, output_dir: str) -> str:
         current_time = datetime.datetime.now()

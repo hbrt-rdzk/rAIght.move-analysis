@@ -9,3 +9,4 @@ class Angle:
 
     name: str
     value: float
+    frame: int

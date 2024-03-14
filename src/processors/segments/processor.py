@@ -1,10 +1,14 @@
+import os
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 from src.processors.angles.angle import Angle
+from src.processors.angles.processor import AnglesProcessor
 from src.processors.base import Processor
 from src.processors.joints.joint import Joint
+from src.processors.joints.processor import JointsProcessor
 from src.processors.segments.segment import Segment
 
 SEGMENTATION_PARAMETERS_NUM = 4
@@ -18,13 +22,7 @@ class SegmentsProcessor(Processor):
     def process(self, data: tuple[list[Joint], list[Angle]]) -> list[Segment]:
         joints, angles = data
         scaler = MinMaxScaler()
-        angles_df = pd.DataFrame(
-            [
-                {angle.name: angle.value for angle in frame_angles}
-                for frame_angles in angles
-            ]
-        )
-
+        angles_df = AnglesProcessor.to_df(angles)
         important_features = (
             angles_df.std()
             .sort_values(ascending=False)[:SEGMENTATION_PARAMETERS_NUM]
@@ -54,8 +52,26 @@ class SegmentsProcessor(Processor):
         self.data = data
 
     def save(self, output_dir: str) -> None:
+        output = self._validate_output(output_dir)
+        for segment in self.data:
+            segment_file = f"rep_{segment.rep}.csv"
+            segment_df = self.to_df(segment)
+
+            results_path = os.path.join(output, segment_file)
+            segment_df.to_csv(results_path, index=False)
+
+    @staticmethod
+    def to_df(data: Segment) -> pd.DataFrame:
+        joints_df = JointsProcessor.to_df(data.joints)
+        angles_df = AnglesProcessor.to_df(data.angles)
+        return pd.concat([joints_df, angles_df], axis=0, join="outer")
+
+    @staticmethod
+    def from_df(data: pd.DataFrame) -> Segment:
         ...
-        # TODO: save state to static file
+
+    def compare_with_reference(self, reference: Segment) -> list:
+        ...
 
     @staticmethod
     def __get_breakpoints(

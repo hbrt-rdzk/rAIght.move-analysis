@@ -9,9 +9,10 @@ from src.processors.joints.joint import Joint
 
 
 class AnglesProcessor(Processor):
-    def __init__(self, model: str) -> None:
+    def __init__(self, angle_names: dict) -> None:
         super().__init__()
-        self.__angle_names = self._config_data[model]["angles"]
+        self.angle_names = angle_names
+        self.__current_frame = 0
 
     def __len__(self) -> int:
         return len(self.data) * len(self.data[0]) * 2
@@ -20,30 +21,38 @@ class AnglesProcessor(Processor):
         joint_dict = {joint.id: [joint.x, joint.y, joint.z] for joint in data}
 
         angles = []
-        for angle_name, joint_ids in self.__angle_names.items():
+        for angle_name, joint_ids in self.angle_names.items():
             coords = np.array([joint_dict[joint_id] for joint_id in joint_ids])
             angle = self.calculate_3D_angle(*coords)
-            angles.append(Angle(angle_name, angle))
+            angles.append(Angle(angle_name, angle, self.__current_frame))
 
         return angles
 
     def update(self, data: list[Angle]) -> None:
         self.data.append(data)
+        self.__current_frame += 1
 
     def save(self, output_dir: str) -> None:
         output = self._validate_output(output_dir)
-        angles_df = self.__to_df()
+        angles_df = self.to_df(self.data)
 
         results_path = os.path.join(output, "angles.csv")
-        angles_df.to_csv(results_path, index=True, index_label="frame")
+        angles_df.to_csv(results_path, index_label="frame")
 
-    def __to_df(self) -> pd.DataFrame:
+    @staticmethod
+    def to_df(data: list[list[Angle]]) -> pd.DataFrame:
+        frames = [frame_angles[0].frame for frame_angles in data]
         return pd.DataFrame(
             [
                 {angle.name: angle.value for angle in frame_angles}
-                for frame_angles in self.data
-            ]
+                for frame_angles in data
+            ],
+            index=frames,
         )
+
+    @staticmethod
+    def from_df(data: pd.DataFrame) -> list[Angle]:
+        ...
 
     @staticmethod
     def calculate_3D_angle(A: np.ndarray, B: np.ndarray, C: np.ndarray) -> float:

@@ -25,15 +25,9 @@ mp_drawing = mp.solutions.drawing_utils
 
 
 class Visualizer:
-    def __init__(self, model: str) -> None:
+    def __init__(self, connections: dict) -> None:
         self.figure, self.axis = self.__initialize_3D_joints_figure()
-        try:
-            with open(CONFIG_PATH) as config:
-                self.config = yaml.safe_load(config)[model]
-        except FileNotFoundError:
-            raise FileNotFoundError("Configuration file not found")
-        except yaml.YAMLError as exc:
-            raise ValueError(f"Error parsing YAML file: {exc}")
+        self.connections = connections
 
     @staticmethod
     def __initialize_3D_joints_figure(
@@ -97,7 +91,7 @@ class Visualizer:
         )
 
     def __plot_connections(self, joints: list[Joint]) -> None:
-        for connection in self.config["connections"]["torso"]:
+        for connection in self.connections:
             joint_start, joint_end = connection
             try:
                 start_coords = next(
