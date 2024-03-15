@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from src.processors.angles.angle import Angle
-from src.processors.joints.joint import Joint
+from processors.angles.angle import Angle
+from processors.joints.joint import Joint
 
 
 @dataclass

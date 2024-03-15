@@ -161,3 +161,6 @@ cython_debug/
 
 # Test results
 results/
+
+# VSCode IDE setting
+.vscode

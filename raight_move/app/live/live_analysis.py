@@ -1,10 +1,9 @@
 import cv2
-
-from src.app.base import OUTPUT_PATH_FIELD, POSE_ESTIMATION_MODEL_NAME, App
-from src.processors.angles.processor import AnglesProcessor
-from src.processors.joints.processor import JointsProcessor
-from src.utils.repetitions_counter import RepetitionsCounter
-from src.utils.visualizer import Visualizer
+from app.base import POSE_ESTIMATION_MODEL_NAME, App
+from processors.angles.processor import AnglesProcessor
+from processors.joints.processor import JointsProcessor
+from utils.repetitions_counter import RepetitionsCounter
+from utils.visualizer import Visualizer
 
 
 class LiveAnalysisApp(App):
@@ -14,8 +13,7 @@ class LiveAnalysisApp(App):
 
     def __init__(self, exercise: str) -> None:
         super().__init__()
-        self.results_path = self._config_data[OUTPUT_PATH_FIELD]
-        self.exercise_phases = self._reference_table[exercise]["phases"]
+        self.exercise_phases = self._phases_table[exercise]
 
         model_config_data = self._config_data[POSE_ESTIMATION_MODEL_NAME]
         self.angle_names = model_config_data["angles"]

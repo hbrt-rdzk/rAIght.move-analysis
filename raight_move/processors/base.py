@@ -19,27 +19,25 @@ class Processor(ABC):
     @abstractmethod
     def update(self, data: list[Any]) -> None:
         """
-        Update internals state of the object
-        """
-
-    @abstractmethod
-    def save(self, output_dir: str) -> None:
-        """
-        Save state to static file
+        Update internal state of the object
         """
 
     @staticmethod
     @abstractmethod
-    def to_df(data: list[Any] | Any) -> pd.DataFrame:
+    def to_df(data: Any) -> pd.DataFrame:
         """
         Convert DataFrame object from data
         """
 
     @staticmethod
     @abstractmethod
-    def from_df(data: pd.DataFrame) -> list[Any] | Any:
+    def from_df(data: pd.DataFrame) -> Any:
+        ...
+
+    @abstractmethod
+    def save(self, output_dir: str) -> None:
         """
-        Convert list of objects from DataFrame
+        Save state to static file
         """
 
     def _validate_output(self, output_dir: str) -> str:

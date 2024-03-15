@@ -2,12 +2,11 @@ import os
 
 import cv2
 import pandas as pd
-
-from src.app.base import OUTPUT_PATH_FIELD, POSE_ESTIMATION_MODEL_NAME, App
-from src.processors.angles.processor import AnglesProcessor
-from src.processors.joints.processor import JointsProcessor
-from src.processors.segments.processor import SegmentsProcessor
-from src.processors.segments.segment import Segment
+from app.base import POSE_ESTIMATION_MODEL_NAME, App
+from processors.angles.processor import AnglesProcessor
+from processors.joints.processor import JointsProcessor
+from processors.segments.processor import SegmentsProcessor
+from processors.segments.segment import Segment
 
 PATH_TO_REFERENCE = "data/{exercise}/features/reference"
 
@@ -19,22 +18,21 @@ class VideoAnalysisApp(App):
 
     def __init__(self, exercise: str) -> None:
         super().__init__()
+        self.segmentation_parameters = self._config_data["segmentation_parameters"]
         model_config_data = self._config_data[POSE_ESTIMATION_MODEL_NAME]
+
         self.angle_names = model_config_data["angles"]
         self.joint_names = model_config_data["joints"]
         self.connections = model_config_data["connections"]["torso"]
+
         reference_joints = pd.read_csv(
             os.path.join(PATH_TO_REFERENCE.format(exercise=exercise), "joints.csv")
         )
         reference_angles = pd.read_csv(
             os.path.join(PATH_TO_REFERENCE.format(exercise=exercise), "angles.csv")
         )
-        self.reference_segment = Segment(
-            rep=0,
-            start_frame=0,
-            finish_frame=len(reference_angles),
-            joints=AnglesProcessor.from_df(reference_joints),
-            angles=JointsProcessor.from_df(reference_angles),
+        self.reference_segment = SegmentsProcessor.from_df(
+            (reference_joints, reference_angles)
         )
 
     def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
@@ -43,8 +41,9 @@ class VideoAnalysisApp(App):
 
         cap = cv2.VideoCapture(input)
         fps = int(cap.get(cv2.CAP_PROP_FPS))
+        video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        segments_processor = SegmentsProcessor(fps)
+        segments_processor = SegmentsProcessor(fps, self.segmentation_parameters)
 
         if not cap.isOpened():
             self.logger.critical("Error on opening video stream or file!")
@@ -69,9 +68,8 @@ class VideoAnalysisApp(App):
                 angles_processor.update(angles)
         cap.release()
 
-        frames_num = len(angles_processor.data)
         analysis_info = (
-            f"Analyzed {frames_num} frames"
+            f"Analyzed {video_length} frames"
             f", extracted {len(joints_processor)} joint feature and"
             f" {len(angles_processor)} angle features."
         )
@@ -83,14 +81,21 @@ class VideoAnalysisApp(App):
         segments_processor.update(segments)
 
         segments_info = {
-            f"repetition {segment.repetition_index}": f"frames: [{segment.start_frame}; {segment.finish_frame}]"
+            f"repetition {segment.rep}": f"frames: [{segment.start_frame}; {segment.finish_frame}]"
             for segment in segments
         }
         self.logger.info(f"Segmented video frames: {segments_info}")
 
         for segment in segments:
             self.logger.info(
-                f"Starting comparison with reference video for rep: {segment.repetition_index}..."
+                f"Starting comparison with reference video for rep: {segment.rep}..."
             )
-            # TODO: comparison between reference and query video
-            # results = segments_processor.compare_with_reference(self.reference_segment)
+            results = segments_processor.compare_segments(
+                segment, self.reference_segment
+            )
+
+        if save_results:
+            try:
+                segments_processor.save(output)
+            except ValueError as error:
+                self.logger.critical(f"Error on trying to save results:\n{error}")

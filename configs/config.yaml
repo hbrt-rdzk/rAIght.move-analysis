@@ -1,4 +1,13 @@
-pose_landmarker:
+segmentation_parameters:
+  signal_features: 4
+  cutoff_freq: 15
+  sliding_window_size: 3
+  stride: 1
+  tolerance: 0.5
+  threshold_height_scaler: 1.5
+
+
+mediapipe:
   joints:
     11: left shoulder
     12: right shoulder
@@ -37,5 +46,3 @@ pose_landmarker:
     right_shoulder: [11, 12, 14]
     left_hip: [11, 23, 25]
     right_hip: [12, 24, 26]
-
-output_path: results

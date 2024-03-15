@@ -1,6 +1,5 @@
 import numpy as np
-
-from src.processors.angles.angle import Angle
+from processors.angles.angle import Angle
 
 
 class RepetitionsCounter:

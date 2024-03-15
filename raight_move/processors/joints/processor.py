@@ -1,10 +1,9 @@
 import os
+from typing import Any
 
 import pandas as pd
-from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
-
-from src.processors.base import Processor
-from src.processors.joints.joint import Joint
+from processors.base import Processor
+from processors.joints.joint import JOINT_PARAMETERS_NUM, Joint
 
 OUTPUT_COLUMNS = ("x", "y", "z", "visibility", "joint_id")
 
@@ -13,12 +12,12 @@ class JointsProcessor(Processor):
     def __init__(self, joint_names: dict) -> None:
         super().__init__()
         self.joint_names = joint_names
-        self.__current_frame = 0
+        self.__current_frame = 1
 
     def __len__(self) -> int:
-        return len(self.data) * len(self.data[0]) * 6
+        return len(self.data) * JOINT_PARAMETERS_NUM
 
-    def process(self, data: NormalizedLandmarkList) -> list[Joint]:
+    def process(self, data: Any) -> list[Joint]:
         return [
             Joint(
                 idx,
@@ -34,8 +33,29 @@ class JointsProcessor(Processor):
         ]
 
     def update(self, data: list[Joint]) -> None:
-        self.data.append(data)
+        self.data.extend(data)
         self.__current_frame += 1
+
+    @staticmethod
+    def to_df(data: list[list[Joint]]) -> pd.DataFrame:
+        return pd.DataFrame(data)
+
+    @staticmethod
+    def from_df(data: pd.DataFrame) -> list[list[Joint]]:
+        joints = []
+        for _, joint in data.iterrows():
+            joints.append(
+                Joint(
+                    joint["id"],
+                    joint["name"],
+                    joint["x"],
+                    joint["y"],
+                    joint["z"],
+                    joint["visibility"],
+                    joint["frame"],
+                )
+            )
+        return joints
 
     def save(self, output_dir: str) -> None:
         output = self._validate_output(output_dir)
@@ -44,13 +64,3 @@ class JointsProcessor(Processor):
 
         results_path = os.path.join(output, "joints.csv")
         joints_df.to_csv(results_path, index=False)
-
-    @staticmethod
-    def to_df(data: list[Joint]) -> pd.DataFrame:
-        return pd.DataFrame(
-            [joint.__dict__ for frame_joints in data for joint in frame_joints]
-        )
-
-    @staticmethod
-    def from_df(data: pd.DataFrame) -> list[Joint]:
-        ...
