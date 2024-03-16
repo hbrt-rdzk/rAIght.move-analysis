@@ -53,7 +53,7 @@ Optional arguments:
 Example of running with a video file:
 
 ```bash
-python3 scripts/cli.py --app="LIVE" -i="path/to/video.mp4" --exercise="squat" --loop --save_results
+python3 scripts/cli.py --app="LIVE" -i="path/to/video.mp4" --exercise="squat" --save_results
 ```
 
 Example of running with a webcam:
@@ -62,9 +62,9 @@ Example of running with a webcam:
 python3 scripts/cli.py --app="LIVE" -i=0 --exercise="squat" -o="squat.csv" --save_results
 ```
 
-To loop the video:
+To analyze the video:
 ```bash
-python3 scripts/cli.py --app="LIVE" -i="path/to/video.mp4" --exercise="squat" --loop
+python3 scripts/cli.py --app="VIDEO" -i="path/to/video.mp4" --exercise="squat" --save_results
 ```
 
 ## Configuration
@@ -74,14 +74,6 @@ The `configs/config.yaml` file contains all the configuration parameters that Gy
 ## Data
 
 The `data/` directory should contain your workout videos categorized by exercise type. This can be used to train the model or for personal record-keeping.
-
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://yourrepositoryurl.com/tags).
 
 ## License
 

@@ -11,7 +11,9 @@ version = "0.1"
 license = {file = "LICENSE"}
 description = "App that helps with your exercise performace"
 requires-python = ">=3.11"
+keywords = ["AI", "pose estimation", "mediapipe"]
 readme = "README.md"
+
 dependencies = [
   "matplotlib>=3.8.2",
   "mediapipe==0.10.9",
@@ -22,6 +24,23 @@ dependencies = [
   "dtw-python>=1.3.1",
   "pyyaml>=6.0.1",
   "scikit-learn>=1.4.0"
+]
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Multimedia :: Video :: Capture",
+  "Topic :: Multimedia :: Video :: Display",
+  "Topic :: Multimedia :: Video :: Conversion",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Multimedia :: Sound/Audio",
+  "Topic :: Utilities"
 ]
 
 [project.optional-dependencies]
