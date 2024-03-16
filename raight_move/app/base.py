@@ -14,7 +14,7 @@ OUTPUT_PATH_FIELD = "output_path"
 class App(ABC):
     def __init__(self) -> None:
         super().__init__()
-        self.__set_logging()
+        self.logger = logging.getLogger(__name__)
 
         self._mp_pose = mp.solutions.pose
         self._pose_estimation_model = self._mp_pose.Pose(
@@ -29,16 +29,6 @@ class App(ABC):
         """
         Run app's flow
         """
-
-    def __set_logging(self) -> None:
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.DEBUG)
-
-        handler = logging.StreamHandler(sys.stdout)
-        formatter = logging.Formatter("%(asctime)-8s: %(levelname)-8s %(message)s")
-        handler.setFormatter(formatter)
-
-        self.logger.addHandler(handler)
 
     def __load_yaml_file(self, file_path: str) -> dict:
         try:

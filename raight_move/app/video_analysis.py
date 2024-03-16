@@ -3,10 +3,10 @@ import os
 import cv2
 import pandas as pd
 from app.base import POSE_ESTIMATION_MODEL_NAME, App
-from processors.angles.processor import AnglesProcessor
-from processors.joints.processor import JointsProcessor
-from processors.segments.processor import SegmentsProcessor
-from processors.segments.segment import Segment
+from processors.angles_processor import AnglesProcessor
+from processors.joints_processor import JointsProcessor
+from processors.results_processor import ResultsProcessor
+from processors.segments_processor import SegmentsProcessor
 
 PATH_TO_REFERENCE = "data/{exercise}/features/reference"
 
@@ -35,9 +35,10 @@ class VideoAnalysisApp(App):
             (reference_joints, reference_angles)
         )
 
-    def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
+    def run(self, input: str, output: str, save_results: bool) -> None:
         joints_processor = JointsProcessor(self.joint_names)
         angles_processor = AnglesProcessor(self.angle_names)
+        results_processor = ResultsProcessor()
 
         cap = cv2.VideoCapture(input)
         fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -46,10 +47,10 @@ class VideoAnalysisApp(App):
         segments_processor = SegmentsProcessor(fps, self.segmentation_parameters)
 
         if not cap.isOpened():
-            self.logger.critical("Error on opening video stream or file!")
+            self.logger.critical("❌ Error on opening video stream or file! ❌")
             return
 
-        self.logger.info("Starting features extraction from video...")
+        self.logger.info("Starting features extraction from video... 🎬")
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
@@ -69,9 +70,9 @@ class VideoAnalysisApp(App):
         cap.release()
 
         analysis_info = (
-            f"Analyzed {video_length} frames"
-            f", extracted {len(joints_processor)} joint feature and"
-            f" {len(angles_processor)} angle features."
+            f"Analyzed {video_length} frames 🖼️"
+            f", extracted {len(joints_processor)} joint features 💪 and"
+            f" {len(angles_processor)} angle features 📐"
         )
         self.logger.info(analysis_info)
 
@@ -88,14 +89,17 @@ class VideoAnalysisApp(App):
 
         for segment in segments:
             self.logger.info(
-                f"Starting comparison with reference video for rep: {segment.rep}..."
+                f"Starting comparison with reference video for rep: {segment.rep}... 🔥"
             )
             results = segments_processor.compare_segments(
                 segment, self.reference_segment
             )
-
+            fine_results = results_processor.process(results)
+            results_processor.update(fine_results)
+        self.logger.info("Analysis complete! ✅")
         if save_results:
             try:
-                segments_processor.save(output)
+                results_processor.save(output)
+                self.logger.info(f"Results here: {output} 💽")
             except ValueError as error:
                 self.logger.critical(f"Error on trying to save results:\n{error}")

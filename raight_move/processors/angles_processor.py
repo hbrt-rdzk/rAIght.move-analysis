@@ -2,9 +2,9 @@ import os
 
 import numpy as np
 import pandas as pd
-from processors.angles.angle import ANGLE_PARAMETERS_NUM, Angle
+from models.angle import ANGLE_PARAMETERS_NUM, Angle
+from models.joint import Joint
 from processors.base import Processor
-from processors.joints.joint import Joint
 
 
 class AnglesProcessor(Processor):
@@ -23,7 +23,7 @@ class AnglesProcessor(Processor):
         for angle_name, joint_ids in self.angle_names.items():
             coords = np.array([joint_dict[joint_id] for joint_id in joint_ids])
             angle = self.__calculate_3D_angle(*coords)
-            angles.append(Angle(angle_name, angle, self.__current_frame))
+            angles.append(Angle(self.__current_frame, angle_name, angle))
 
         return angles
 
@@ -39,7 +39,7 @@ class AnglesProcessor(Processor):
     def from_df(data: pd.DataFrame) -> list[Angle]:
         angles = []
         for _, angle in data.iterrows():
-            angles.append(Angle(angle["name"], angle["value"], angle["frame"]))
+            angles.append(Angle(angle["frame"], angle["name"], angle["value"]))
         return angles
 
     def save(self, output_dir: str) -> None:

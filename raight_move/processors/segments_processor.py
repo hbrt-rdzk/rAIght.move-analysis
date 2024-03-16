@@ -2,12 +2,12 @@ import os
 
 import numpy as np
 import pandas as pd
-from processors.angles.angle import Angle
-from processors.angles.processor import AnglesProcessor
+from models.angle import ANGLES_PER_FRAME, Angle
+from models.joint import JOINTS_PER_FRAME, Joint
+from models.segment import Segment
+from processors.angles_processor import AnglesProcessor
 from processors.base import Processor
-from processors.joints.joint import Joint
-from processors.joints.processor import JointsProcessor
-from processors.segments.segment import Segment
+from processors.joints_processor import JointsProcessor
 from sklearn.preprocessing import MinMaxScaler
 from utils.dtw import get_warped_frame_indexes
 
@@ -20,8 +20,6 @@ class SegmentsProcessor(Processor):
 
     def process(self, data: tuple[list[Joint], list[Angle]]) -> list[Segment]:
         joints, angles = data
-        joints_per_frame = len(np.unique([joint.name for joint in joints]))
-        angles_per_frame = len(np.unique([angle.name for angle in angles]))
 
         exercise_signal = self.__get_exercise_signal(angles)
         filtered_exercise_signal = self.__filter_signal(exercise_signal)
@@ -31,14 +29,14 @@ class SegmentsProcessor(Processor):
         segments = []
         for rep, (start_frame, finish_frame) in enumerate(breakpoints):
             segment_joints = joints[
-                start_frame * joints_per_frame : finish_frame * joints_per_frame
+                start_frame * JOINTS_PER_FRAME : finish_frame * JOINTS_PER_FRAME
             ]
             segment_angles = angles[
-                start_frame * angles_per_frame : finish_frame * angles_per_frame
+                start_frame * ANGLES_PER_FRAME : finish_frame * ANGLES_PER_FRAME
             ]
 
             segments.append(
-                Segment(rep, start_frame, finish_frame, segment_joints, segment_angles)
+                Segment(start_frame, finish_frame, rep, segment_joints, segment_angles)
             )
         return self.__filter_segments(segments, filtered_exercise_signal)
 
@@ -83,6 +81,19 @@ class SegmentsProcessor(Processor):
         query_to_reference_indexes = get_warped_frame_indexes(
             query_signal, reference_signal
         )
+        results = []
+        for query_index, reference_index in enumerate(query_to_reference_indexes):
+            query_span = query_index * ANGLES_PER_FRAME
+            referencey_span = reference_index * ANGLES_PER_FRAME
+
+            query_angles = query.angles[query_span : query_span + ANGLES_PER_FRAME]
+            reference_angles = reference.angles[
+                referencey_span : referencey_span + ANGLES_PER_FRAME
+            ]
+            for query_angle, reference_angle in zip(query_angles, reference_angles):
+                angle_diff = np.abs(query_angle.value - reference_angle.value)
+                results.append([query_angle.frame, query_angle.name, angle_diff])
+        return results
 
     def __get_exercise_signal(self, angles: list[Angle]) -> np.ndarray:
         angles_df = AnglesProcessor.to_df(angles).pivot(

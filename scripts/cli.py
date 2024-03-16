@@ -1,8 +1,8 @@
 import argparse
 from enum import Enum
 
-from app.live.live_analysis import LiveAnalysisApp
-from app.video.video_analysis import VideoAnalysisApp
+from app.live_analysis import LiveAnalysisApp
+from app.video_analysis import VideoAnalysisApp
 
 
 class AppTypes(Enum):
@@ -37,16 +37,11 @@ def parse_arguments() -> argparse.Namespace:
 
     optional = parser.add_argument_group("Optional arguments")
     optional.add_argument(
-        "-o", "--output", help="Output path for joints results", default="results"
+        "-o", "--output", help="Output path for results", default="results"
     )
     optional.add_argument(
         "--save_results",
-        help="If positions should be saved or not",
-        action="store_true",
-    )
-    optional.add_argument(
-        "--loop",
-        help="If video should be looped or not",
+        help="If results should be saved or not",
         action="store_true",
     )
     return parser.parse_args()
@@ -59,7 +54,7 @@ def main():
         app = app_type.value(args.exercise)
     except KeyError:
         raise ValueError("Invalid app type")
-    app.run(args.input, args.output, args.save_results, args.loop)
+    app.run(args.input, args.output, args.save_results)
 
 
 if __name__ == "__main__":

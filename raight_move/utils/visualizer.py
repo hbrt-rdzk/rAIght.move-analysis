@@ -1,13 +1,12 @@
 import matplotlib.pyplot as plt
 import mediapipe as mp
 import numpy as np
-import yaml
 from matplotlib.figure import Figure
 from mediapipe.framework.formats.landmark_pb2 import NormalizedLandmarkList
+from models.angle import Angle
+from models.joint import Joint
 from mpl_toolkits.mplot3d.art3d import Line3DCollection, Poly3DCollection
 from mpl_toolkits.mplot3d.axes3d import Axes3D
-from processors.angles.angle import Angle
-from processors.joints.joint import Joint
 
 ELEV = -90
 AZIM = -90

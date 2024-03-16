@@ -1,7 +1,7 @@
 import cv2
 from app.base import POSE_ESTIMATION_MODEL_NAME, App
-from processors.angles.processor import AnglesProcessor
-from processors.joints.processor import JointsProcessor
+from processors.angles_processor import AnglesProcessor
+from processors.joints_processor import JointsProcessor
 from utils.repetitions_counter import RepetitionsCounter
 from utils.visualizer import Visualizer
 
@@ -20,7 +20,7 @@ class LiveAnalysisApp(App):
         self.joint_names = model_config_data["joints"]
         self.connections = model_config_data["connections"]["torso"]
 
-    def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
+    def run(self, input: str, output: str, save_results: bool) -> None:
         joints_processor = JointsProcessor(self.joint_names)
         angles_processor = AnglesProcessor(self.angle_names)
 
@@ -38,11 +38,7 @@ class LiveAnalysisApp(App):
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
-                if loop:
-                    cap = cv2.VideoCapture(input)
-                    continue
-                else:
-                    break
+                break
 
             results = self._pose_estimation_model.process(frame)
             landmarks = results.pose_landmarks

@@ -7,6 +7,10 @@ import pandas as pd
 
 
 class Processor(ABC):
+    """
+    Classes that inherits from Processor are responsible for storing and processing data
+    """
+
     def __init__(self) -> None:
         self.data = []
 

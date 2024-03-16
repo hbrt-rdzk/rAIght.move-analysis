@@ -2,10 +2,8 @@ import os
 from typing import Any
 
 import pandas as pd
+from models.joint import JOINT_PARAMETERS_NUM, Joint
 from processors.base import Processor
-from processors.joints.joint import JOINT_PARAMETERS_NUM, Joint
-
-OUTPUT_COLUMNS = ("x", "y", "z", "visibility", "joint_id")
 
 
 class JointsProcessor(Processor):
@@ -20,13 +18,13 @@ class JointsProcessor(Processor):
     def process(self, data: Any) -> list[Joint]:
         return [
             Joint(
+                self.__current_frame,
                 idx,
                 self.joint_names[idx],
                 joint.x,
                 joint.y,
                 joint.z,
                 joint.visibility,
-                self.__current_frame,
             )
             for idx, joint in enumerate(data.landmark)
             if idx in self.joint_names.keys()
@@ -46,13 +44,13 @@ class JointsProcessor(Processor):
         for _, joint in data.iterrows():
             joints.append(
                 Joint(
+                    joint["frame"],
                     joint["id"],
                     joint["name"],
                     joint["x"],
                     joint["y"],
                     joint["z"],
                     joint["visibility"],
-                    joint["frame"],
                 )
             )
         return joints

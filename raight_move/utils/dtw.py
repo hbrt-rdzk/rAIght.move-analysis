@@ -5,7 +5,7 @@ import pandas as pd
 from dtw import dtw
 
 
-def get_warped_frame_indexes(query: np.ndarray, reference: np.ndarray) -> Any:
+def get_warped_frame_indexes(query: np.ndarray, reference: np.ndarray) -> list:
     alignment = dtw(query, reference, keep_internals=True)
     reference_to_query_warped = alignment.index1
     query_to_refernce_warped = alignment.index2
