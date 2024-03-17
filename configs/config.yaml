@@ -1,9 +1,8 @@
 segmentation_parameters:
-  signal_features: 4
-  cutoff_freq: 15
-  sliding_window_size: 3
+  signal_features: 6
+  sliding_window_scaler: 5
   stride: 1
-  tolerance: 0.5
+  tolerance: 0.005
   threshold_height_scaler: 1.5
 
 

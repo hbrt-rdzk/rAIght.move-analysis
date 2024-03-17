@@ -100,6 +100,7 @@ class VideoAnalysisApp(App):
         if save_results:
             try:
                 results_processor.save(output)
+                segments_processor.save(output)
                 self.logger.info(f"Results here: {output} 💽")
             except ValueError as error:
                 self.logger.critical(f"Error on trying to save results:\n{error}")

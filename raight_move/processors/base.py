@@ -13,6 +13,7 @@ class Processor(ABC):
 
     def __init__(self) -> None:
         self.data = []
+        self.current_time = datetime.datetime.now()
 
     @abstractmethod
     def process(self, data: list[Any]) -> list[Any]:
@@ -45,8 +46,9 @@ class Processor(ABC):
         """
 
     def _validate_output(self, output_dir: str) -> str:
-        current_time = datetime.datetime.now()
-        output_subdir = datetime.datetime.strftime(current_time, "%Y-%m-%d_%H:%M:%S")
+        output_subdir = datetime.datetime.strftime(
+            self.current_time, "%Y-%m-%d_%H:%M:%S"
+        )
 
         if not self.data:
             raise ValueError("No data to save.")

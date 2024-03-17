@@ -113,7 +113,9 @@ class SegmentsProcessor(Processor):
         return important_angles_normalized.mean(axis=1)
 
     def __get_breakpoints(self, signal: np.ndarray, threshold: float) -> list:
-        sliding_window_size = self.segmentaion_parameters["sliding_window_size"]
+        sliding_window_size = (
+            self.fps // self.segmentaion_parameters["sliding_window_scaler"]
+        )
         tolerance = self.segmentaion_parameters["tolerance"]
         stride = self.segmentaion_parameters["stride"]
 
@@ -136,7 +138,7 @@ class SegmentsProcessor(Processor):
         ]
 
     def __filter_signal(self, signal: np.ndarray) -> np.ndarray:
-        cutoff_freq = self.segmentaion_parameters["cutoff_freq"]
+        cutoff_freq = self.fps
         kernel = np.ones(cutoff_freq) / cutoff_freq
         filtered_signal = np.convolve(signal, kernel, mode="same")
         return filtered_signal
