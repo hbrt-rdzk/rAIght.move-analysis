@@ -6,7 +6,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "rAIght.move"
+name = "move.rAIght"
 version = "0.1"
 license = {file = "LICENSE"}
 description = "App that helps with your exercise performace"
@@ -50,4 +50,4 @@ dev = [
 ]
 
 [tool.setuptools]
-package-dir = {"" = "raight_move"}
+package-dir = {"" = "move_raight"}
