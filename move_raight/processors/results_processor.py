@@ -20,7 +20,7 @@ class ResultsProcessor(Processor):
         return pd.DataFrame(data)
 
     @staticmethod
-    def from_df(data: list[Result]) -> pd.DataFrame:
+    def from_df(data: pd.DataFrame) -> list[Result]:
         results = []
         for _, result in data.iterrows():
             results.append(
@@ -30,7 +30,11 @@ class ResultsProcessor(Processor):
 
     def save(self, output_dir: str) -> None:
         output = self._validate_output(output_dir)
-        angles_df = self.to_df(self.data)
+        results_df = self.to_df(self.data)
+        results_segments = results_df.groupby("rep")
 
-        results_path = os.path.join(output, "resutls.csv")
-        angles_df.to_csv(results_path, index=False)
+        for rep, results in results_segments:
+            results_path = os.path.join(output, f"rep_{rep}")
+            os.makedirs(results_path, exist_ok=True)
+
+            results.to_csv(os.path.join(results_path, "results.csv"), index=False)

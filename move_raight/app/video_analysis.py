@@ -20,6 +20,7 @@ class VideoAnalysisApp(App):
         super().__init__()
         self.segmentation_parameters = self._config_data["segmentation_parameters"]
         model_config_data = self._config_data[POSE_ESTIMATION_MODEL_NAME]
+        self.comparison_features = self._exercise_table[exercise]["comparison_features"]
 
         self.angle_names = model_config_data["angles"]
         self.joint_names = model_config_data["joints"]
@@ -44,7 +45,9 @@ class VideoAnalysisApp(App):
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        segments_processor = SegmentsProcessor(fps, self.segmentation_parameters)
+        segments_processor = SegmentsProcessor(
+            fps, self.segmentation_parameters, self.comparison_features
+        )
 
         if not cap.isOpened():
             self.logger.critical("❌ Error on opening video stream or file! ❌")
@@ -61,6 +64,9 @@ class VideoAnalysisApp(App):
 
             if world_landmards:
                 # Joints processing
+                frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+                JointsProcessor.current_processing_frame = frame_number
+
                 joints = joints_processor.process(world_landmards)
                 joints_processor.update(joints)
 

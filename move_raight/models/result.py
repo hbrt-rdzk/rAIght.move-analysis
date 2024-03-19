@@ -8,5 +8,6 @@ class Result:
     """
 
     frame: int
+    rep: int
     angle_name: str
     diff: float

@@ -37,7 +37,9 @@ class Processor(ABC):
     @staticmethod
     @abstractmethod
     def from_df(data: pd.DataFrame) -> Any:
-        ...
+        """
+        Convert data from DataFrame object
+        """
 
     @abstractmethod
     def save(self, output_dir: str) -> None:

@@ -13,7 +13,7 @@ class LiveAnalysisApp(App):
 
     def __init__(self, exercise: str) -> None:
         super().__init__()
-        self.exercise_phases = self._phases_table[exercise]
+        self.exercise_phases = self._exercise_table[exercise]
 
         model_config_data = self._config_data[POSE_ESTIMATION_MODEL_NAME]
         self.angle_names = model_config_data["angles"]
@@ -34,18 +34,19 @@ class LiveAnalysisApp(App):
         if not cap.isOpened():
             self.logger.critical("Error on opening video stream or file!")
             return
-
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
-
             results = self._pose_estimation_model.process(frame)
             landmarks = results.pose_landmarks
             world_landmards = results.pose_world_landmarks
 
             if world_landmards:
                 # Joints processing
+                frame_number = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+                JointsProcessor.current_processing_frame = frame_number
+
                 joints = joints_processor.process(world_landmards)
                 joints_processor.update(joints)
 

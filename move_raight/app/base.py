@@ -6,7 +6,7 @@ import mediapipe as mp
 import yaml
 
 CONFIG_PATH = "configs/config.yaml"
-PHASES_TABLE = "configs/phases_table.yaml"
+PHASES_TABLE = "configs/exercises_table.yaml"
 POSE_ESTIMATION_MODEL_NAME = "mediapipe"
 OUTPUT_PATH_FIELD = "output_path"
 
@@ -18,11 +18,13 @@ class App(ABC):
 
         self._mp_pose = mp.solutions.pose
         self._pose_estimation_model = self._mp_pose.Pose(
-            min_detection_confidence=0.5, min_tracking_confidence=0.5
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5,
+            model_complexity=2,
         )
 
         self._config_data = self.__load_yaml_file(CONFIG_PATH)
-        self._phases_table = self.__load_yaml_file(PHASES_TABLE)
+        self._exercise_table = self.__load_yaml_file(PHASES_TABLE)
 
     @abstractmethod
     def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:

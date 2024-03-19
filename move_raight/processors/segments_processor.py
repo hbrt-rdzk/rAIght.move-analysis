@@ -13,28 +13,30 @@ from utils.dtw import get_warped_frame_indexes
 
 
 class SegmentsProcessor(Processor):
-    def __init__(self, fps: int, segmentation_parameters: dict) -> None:
+    def __init__(
+        self, fps: int, segmentation_parameters: dict, comparison_features: str
+    ) -> None:
         super().__init__()
         self.fps = fps
         self.segmentaion_parameters = segmentation_parameters
+        self.comparison_featues = comparison_features
 
     def process(self, data: tuple[list[Joint], list[Angle]]) -> list[Segment]:
         joints, angles = data
 
         exercise_signal = self.__get_exercise_signal(angles)
         filtered_exercise_signal = self.__filter_signal(exercise_signal)
-
         threshold = filtered_exercise_signal.mean()
         breakpoints = self.__get_breakpoints(filtered_exercise_signal, threshold)
+
         segments = []
         for rep, (start_frame, finish_frame) in enumerate(breakpoints):
-            segment_joints = joints[
-                start_frame * JOINTS_PER_FRAME : finish_frame * JOINTS_PER_FRAME
+            segment_joints = [
+                joint for joint in joints if start_frame <= joint.frame <= finish_frame
             ]
-            segment_angles = angles[
-                start_frame * ANGLES_PER_FRAME : finish_frame * ANGLES_PER_FRAME
+            segment_angles = [
+                angle for angle in angles if start_frame <= angle.frame <= finish_frame
             ]
-
             segments.append(
                 Segment(start_frame, finish_frame, rep, segment_joints, segment_angles)
             )
@@ -68,7 +70,7 @@ class SegmentsProcessor(Processor):
         for segment in self.data:
             segment_file = f"rep_{segment.rep}"
             results_path = os.path.join(output, segment_file)
-            os.mkdir(results_path)
+            os.makedirs(results_path, exist_ok=True)
 
             joints_df, angles_df = self.to_df(segment)
 
@@ -76,8 +78,8 @@ class SegmentsProcessor(Processor):
             angles_df.to_csv(os.path.join(results_path, "angles.csv"), index=False)
 
     def compare_segments(self, query: Segment, reference: Segment) -> list:
-        query_signal = self.__get_exercise_signal(query.angles)
-        reference_signal = self.__get_exercise_signal(reference.angles)
+        query_signal = self.__get_features_signal(query.angles)
+        reference_signal = self.__get_features_signal(reference.angles)
         query_to_reference_indexes = get_warped_frame_indexes(
             query_signal, reference_signal
         )
@@ -91,9 +93,17 @@ class SegmentsProcessor(Processor):
                 referencey_span : referencey_span + ANGLES_PER_FRAME
             ]
             for query_angle, reference_angle in zip(query_angles, reference_angles):
-                angle_diff = np.abs(query_angle.value - reference_angle.value)
-                results.append([query_angle.frame, query_angle.name, angle_diff])
+                angle_diff = query_angle.value - reference_angle.value
+                results.append(
+                    [query_angle.frame, query.rep, query_angle.name, angle_diff]
+                )
         return results
+
+    def __get_features_signal(self, angles: list[Angle]) -> np.ndarray:
+        angles_df = AnglesProcessor.to_df(angles).pivot(
+            index="frame", columns="name", values="value"
+        )
+        return angles_df[self.comparison_featues].mean(axis=1)
 
     def __get_exercise_signal(self, angles: list[Angle]) -> np.ndarray:
         angles_df = AnglesProcessor.to_df(angles).pivot(
@@ -107,10 +117,11 @@ class SegmentsProcessor(Processor):
             ]
             .keys()
         )
+
         important_angles_df = angles_df[important_features]
         important_angles_normalized = scaler.fit_transform(important_angles_df)
 
-        return important_angles_normalized.mean(axis=1)
+        return self.__filter_signal(important_angles_normalized.mean(axis=1))
 
     def __get_breakpoints(self, signal: np.ndarray, threshold: float) -> list:
         sliding_window_size = (
@@ -134,7 +145,8 @@ class SegmentsProcessor(Processor):
                     state = "up"
                     breakpoints.append(idx + sliding_window_size // 2)
         return [
-            [start, end] for start, end in zip(breakpoints[0::2], breakpoints[2::2])
+            [start, end + self.fps]
+            for start, end in zip(breakpoints[0::2], breakpoints[2::2])
         ]
 
     def __filter_signal(self, signal: np.ndarray) -> np.ndarray:

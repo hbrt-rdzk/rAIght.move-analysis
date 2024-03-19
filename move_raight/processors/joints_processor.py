@@ -7,10 +7,11 @@ from processors.base import Processor
 
 
 class JointsProcessor(Processor):
+    current_processing_frame = 1
+
     def __init__(self, joint_names: dict) -> None:
         super().__init__()
         self.joint_names = joint_names
-        self.__current_frame = 1
 
     def __len__(self) -> int:
         return len(self.data) * JOINT_PARAMETERS_NUM
@@ -18,7 +19,7 @@ class JointsProcessor(Processor):
     def process(self, data: Any) -> list[Joint]:
         return [
             Joint(
-                self.__current_frame,
+                self.current_processing_frame,
                 idx,
                 self.joint_names[idx],
                 joint.x,
@@ -32,7 +33,6 @@ class JointsProcessor(Processor):
 
     def update(self, data: list[Joint]) -> None:
         self.data.extend(data)
-        self.__current_frame += 1
 
     @staticmethod
     def to_df(data: list[list[Joint]]) -> pd.DataFrame:

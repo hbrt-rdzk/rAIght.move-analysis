@@ -11,25 +11,24 @@ class AnglesProcessor(Processor):
     def __init__(self, angle_names: dict) -> None:
         super().__init__()
         self.angle_names = angle_names
-        self.__current_frame = 1
 
     def __len__(self) -> int:
         return len(self.data) * ANGLE_PARAMETERS_NUM
 
     def process(self, data: list[Joint]) -> list[Angle]:
+        frame_number = data[0].frame
         joint_dict = {joint.id: [joint.x, joint.y, joint.z] for joint in data}
 
         angles = []
         for angle_name, joint_ids in self.angle_names.items():
             coords = np.array([joint_dict[joint_id] for joint_id in joint_ids])
             angle = self.__calculate_3D_angle(*coords)
-            angles.append(Angle(self.__current_frame, angle_name, angle))
+            angles.append(Angle(frame_number, angle_name, angle))
 
         return angles
 
     def update(self, data: list[Angle]) -> None:
         self.data.extend(data)
-        self.__current_frame += 1
 
     @staticmethod
     def to_df(data: list[Angle]) -> pd.DataFrame:
