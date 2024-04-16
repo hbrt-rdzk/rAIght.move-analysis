@@ -23,6 +23,7 @@ class AnglesProcessor(Processor):
         for angle_name, joint_ids in self.angle_names.items():
             coords = np.array([joint_dict[joint_id] for joint_id in joint_ids])
             angle = self.__calculate_3D_angle(*coords)
+            print(angle_name)
             angles.append(Angle(frame_number, angle_name, angle))
 
         return angles
@@ -57,7 +58,6 @@ class AnglesProcessor(Processor):
         bc = C - B
 
         cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
-        cosine_angle = np.clip(cosine_angle, -1, 1)
         angle = np.arccos(cosine_angle)
 
         return np.degrees(angle)
