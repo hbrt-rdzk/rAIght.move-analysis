@@ -78,32 +78,30 @@ class SegmentsProcessor(Processor):
             angles_df.to_csv(os.path.join(results_path, "angles.csv"), index=False)
 
     def compare_segments(self, query: Segment, reference: Segment) -> list:
-        query_signal = self.__get_features_signal(query.angles)
-        reference_signal = self.__get_features_signal(reference.angles)
-        query_to_reference_indexes = get_warped_frame_indexes(
-            query_signal, reference_signal
-        )
         results = []
-        for query_index, reference_index in enumerate(query_to_reference_indexes):
-            query_span = query_index * ANGLES_PER_FRAME
-            referencey_span = reference_index * ANGLES_PER_FRAME
+        for feature in self.comparison_featues:
+            query_signal = self.__get_features_signal(query.angles, feature)
+            reference_signal = self.__get_features_signal(reference.angles, feature)
+            path = get_warped_frame_indexes(query_signal, reference_signal)
+            for id, (query_index, reference_index) in enumerate(path):
+                query_span = query_index * ANGLES_PER_FRAME
+                referencey_span = reference_index * ANGLES_PER_FRAME
 
-            query_angles = query.angles[query_span : query_span + ANGLES_PER_FRAME]
-            reference_angles = reference.angles[
-                referencey_span : referencey_span + ANGLES_PER_FRAME
-            ]
-            for query_angle, reference_angle in zip(query_angles, reference_angles):
-                angle_diff = query_angle.value - reference_angle.value
-                results.append(
-                    [query_angle.frame, query.rep, query_angle.name, angle_diff]
-                )
+                query_angles = query.angles[query_span : query_span + ANGLES_PER_FRAME]
+                reference_angles = reference.angles[
+                    referencey_span : referencey_span + ANGLES_PER_FRAME
+                ]
+                for query_angle, reference_angle in zip(query_angles, reference_angles):
+                    if query_angle.name == feature:
+                        angle_diff = query_angle.value - reference_angle.value
+                        results.append([id, query.rep, query_angle.name, angle_diff])
         return results
 
-    def __get_features_signal(self, angles: list[Angle]) -> np.ndarray:
+    def __get_features_signal(self, angles: list[Angle], feature: str) -> np.ndarray:
         angles_df = AnglesProcessor.to_df(angles).pivot(
             index="frame", columns="name", values="value"
         )
-        return angles_df[self.comparison_featues].mean(axis=1)
+        return angles_df[feature]
 
     def __get_exercise_signal(self, angles: list[Angle]) -> np.ndarray:
         angles_df = AnglesProcessor.to_df(angles).pivot(

@@ -6,4 +6,3 @@ class ExerciseState:
     exercise_name: str
     step: int
     angles: list[str]
-    joints: list[float]

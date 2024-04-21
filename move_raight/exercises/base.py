@@ -12,5 +12,3 @@ class Exercise(ABC):
 
     @abstractmethod
     def compare_states(self) -> dict: ...
-
-    

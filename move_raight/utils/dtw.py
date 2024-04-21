@@ -1,14 +1,11 @@
 import numpy as np
-from dtw import dtw
+from tslearn.metrics import dtw_path
 
 
 def get_warped_frame_indexes(query: np.ndarray, reference: np.ndarray) -> list:
-    alignment = dtw(query, reference, keep_internals=True)
-    reference_to_query_warped = alignment.index1
-    query_to_refernce_warped = alignment.index2
-    return filter_repetable_reference_indexes(
-        reference_to_query_warped, query_to_refernce_warped
-    )
+    path, _ = dtw_path(query, reference)
+    path = np.array(path)
+    return path
 
 
 def filter_repetable_reference_indexes(

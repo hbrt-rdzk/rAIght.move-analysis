@@ -1,7 +1,9 @@
 squat:
   comparison_features: [
     left_knee,
-    right_knee
+    right_knee,
+    left_hip,
+    right_hip
   ]
   start:
     right_knee: 165
