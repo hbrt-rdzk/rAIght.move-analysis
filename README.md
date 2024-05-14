@@ -73,6 +73,8 @@ The `configs/config.yaml` file contains all the configuration parameters that Gy
 
 ## Data
 
+Source: https://drive.google.com/drive/folders/1Y00Qw6QyAnhrxUWelyFcTm2a7tnZB93y
+
 The `data/` directory should contain your workout videos categorized by exercise type. This can be used to train the model or for personal record-keeping.
 
 ## License
