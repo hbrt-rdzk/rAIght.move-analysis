@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 from models.angle import ANGLES_PER_FRAME, Angle
-from models.joint import JOINTS_PER_FRAME, Joint
+from models.joint import Joint
 from models.segment import Segment
 from processors.angles_processor import AnglesProcessor
 from processors.base import Processor

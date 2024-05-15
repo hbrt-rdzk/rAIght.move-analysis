@@ -37,4 +37,4 @@ class ResultsProcessor(Processor):
             results_path = os.path.join(output, f"rep_{rep}")
             os.makedirs(results_path, exist_ok=True)
 
-            results.to_csv(os.path.join(results_path, "results.csv"), index=False)
+            results.to_csv(os.path.join(results_path, "angles_diffs.csv"), index=False)

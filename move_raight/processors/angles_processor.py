@@ -6,6 +6,8 @@ from models.angle import ANGLE_PARAMETERS_NUM, Angle
 from models.joint import Joint
 from processors.base import Processor
 
+ANGLE_TYPES = {"3D": [0, 1, 2], "roll": [1, 2], "pitch": [0, 2], "yaw": [0, 1]}
+
 
 class AnglesProcessor(Processor):
     def __init__(self, angle_names: dict) -> None:
@@ -22,8 +24,9 @@ class AnglesProcessor(Processor):
         angles = []
         for angle_name, joint_ids in self.angle_names.items():
             coords = np.array([joint_dict[joint_id] for joint_id in joint_ids])
-            angle = self.__calculate_3D_angle(*coords)
-            angles.append(Angle(frame_number, angle_name, angle))
+            for angle_type, angle_dims in ANGLE_TYPES.items():
+                angle = self.__calculate_angle(*coords, angle_dims)
+                angles.append(Angle(frame_number, f"{angle_name}_{angle_type}", angle))
 
         return angles
 
@@ -49,9 +52,14 @@ class AnglesProcessor(Processor):
         angles_df.to_csv(results_path, index=False)
 
     @staticmethod
-    def __calculate_3D_angle(A: np.ndarray, B: np.ndarray, C: np.ndarray) -> float:
+    def __calculate_angle(
+        A: np.ndarray, B: np.ndarray, C: np.ndarray, dims: list = [0, 1, 2]
+    ) -> float:
         if not (A.shape == B.shape == C.shape == (3,)):
             raise ValueError("Input arrays must all be of shape (3,).")
+        A = A[dims]
+        B = B[dims]
+        C = C[dims]
 
         ba = A - B
         bc = C - B
