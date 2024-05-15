@@ -82,4 +82,4 @@ class LiveAnalysisApp(App):
                 joints_processor.save(output)
                 angles_processor.save(output)
             except ValueError as error:
-                self.logger.critical(f"Error on trying to save results:\n{error}")
+                self.logger.critical("Error on trying to save results: %s", error)

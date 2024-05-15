@@ -1,5 +1,4 @@
 import logging
-import sys
 from abc import ABC, abstractmethod
 
 import mediapipe as mp
@@ -27,14 +26,14 @@ class App(ABC):
         self._exercise_table = self.__load_yaml_file(PHASES_TABLE)
 
     @abstractmethod
-    def run(self, input: str, output: str, save_results: bool, loop: bool) -> None:
+    def run(self, input: str, output: str, save_results: bool) -> None:
         """
         Run app's flow
         """
 
     def __load_yaml_file(self, file_path: str) -> dict:
         try:
-            with open(file_path) as file:
+            with open(file_path, "r") as file:
                 return yaml.safe_load(file)
         except FileNotFoundError as error:
             raise FileNotFoundError(f"File not found: {error.filename}") from None

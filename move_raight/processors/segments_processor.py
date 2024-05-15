@@ -192,7 +192,7 @@ class SegmentsProcessor(Processor):
 
         valid_segments = list(
             filter(
-                lambda segment: is_valid_segment(segment),
+                is_valid_segment,
                 segments,
             )
         )

@@ -53,18 +53,18 @@ class AnglesProcessor(Processor):
 
     @staticmethod
     def __calculate_angle(
-        A: np.ndarray, B: np.ndarray, C: np.ndarray, dims: list = [0, 1, 2]
+        v1: np.ndarray, v2: np.ndarray, v3: np.ndarray, dims: list = [0, 1, 2]
     ) -> float:
-        if not (A.shape == B.shape == C.shape == (3,)):
+        if not all(arr.shape == (3,) for arr in (v1, v2, v3)):
             raise ValueError("Input arrays must all be of shape (3,).")
-        A = A[dims]
-        B = B[dims]
-        C = C[dims]
+        v1 = v1[dims]
+        v2 = v2[dims]
+        v3 = v3[dims]
 
-        ba = A - B
-        bc = C - B
+        v21 = v1 - v2
+        v23 = v3 - v2
 
-        cosine_angle = np.dot(ba, bc) / (np.linalg.norm(ba) * np.linalg.norm(bc))
+        cosine_angle = np.dot(v21, v23) / (np.linalg.norm(v21) * np.linalg.norm(v23))
         angle = np.arccos(cosine_angle)
 
         return np.degrees(angle)

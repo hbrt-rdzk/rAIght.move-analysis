@@ -7,6 +7,10 @@ from processors.base import Processor
 
 
 class JointsProcessor(Processor):
+    """
+    Procssor of the joints in 3D space
+    """
+
     current_processing_frame = 1
 
     def __init__(self, joint_names: dict) -> None:

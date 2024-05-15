@@ -91,11 +91,12 @@ class VideoAnalysisApp(App):
             f"repetition {segment.rep}": f"frames: [{segment.start_frame}; {segment.finish_frame}]"
             for segment in segments
         }
-        self.logger.info(f"Segmented video frames: {segments_info}")
+        self.logger.info("Segmented video frames: %s", segments_info)
 
         for segment in segments:
             self.logger.info(
-                f"Starting comparison with reference video for rep: {segment.rep}... 🔥"
+                "Starting comparison with reference video for rep: %s... 🔥",
+                segment.rep,
             )
             results = segments_processor.compare_segments(
                 segment, self.reference_segment
@@ -107,6 +108,6 @@ class VideoAnalysisApp(App):
             try:
                 results_processor.save(output)
                 segments_processor.save(output)
-                self.logger.info(f"Results here: {output} 💽")
+                self.logger.info("Results here: %s 💽", segment.rep)
             except ValueError as error:
-                self.logger.critical(f"Error on trying to save results:\n{error}")
+                self.logger.critical("Error on trying to save results:\n %s", error)

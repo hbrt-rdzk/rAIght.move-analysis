@@ -3,6 +3,10 @@ from models.angle import Angle
 
 
 class RepetitionsCounter:
+    """
+    Counter of repetitions in live app
+    """
+
     def __init__(self, exercise_phases: str) -> None:
         self.start_angles = exercise_phases["start"]
         self.finish_angles = exercise_phases["finish"]
@@ -11,13 +15,9 @@ class RepetitionsCounter:
         self.state = "up"
 
     def process(self, data: list[Angle]) -> list:
-        reference_angle_names = [angle_name for angle_name in self.start_angles.keys()]
-        start_reference_angles = np.array(
-            [angle_name for angle_name in self.start_angles.values()]
-        )
-        finish_reference_angles = np.array(
-            [angle_name for angle_name in self.finish_angles.values()]
-        )
+        reference_angle_names = list(self.start_angles.keys())
+        start_reference_angles = np.array(list(self.start_angles.values()))
+        finish_reference_angles = np.array(list(self.finish_angles.values()))
 
         data_angles = np.array(
             [angle.value for angle in data if angle.name in reference_angle_names]

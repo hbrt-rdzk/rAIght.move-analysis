@@ -24,11 +24,11 @@ mp_drawing = mp.solutions.drawing_utils
 
 class Visualizer:
     def __init__(self, connections: dict) -> None:
-        self.figure, self.axis = self.__initialize_3D_joints_figure()
+        self.figure, self.axis = self.__initialize_figure()
         self.connections = connections
 
     @staticmethod
-    def __initialize_3D_joints_figure(
+    def __initialize_figure(
         elev: int = ELEV, azim: int = AZIM
     ) -> tuple[Figure, Axes3D]:
         fig = plt.figure()
