@@ -4,8 +4,9 @@ from abc import ABC, abstractmethod
 import mediapipe as mp
 import yaml
 
-CONFIG_PATH = "configs/config.yaml"
+POSE_ESTIMATION_CONFIG = "configs/pose_estimators.yaml"
 PHASES_TABLE = "configs/exercises_table.yaml"
+SEGMENTATION_CONFIG = "configs/segmentation.yaml"
 POSE_ESTIMATION_MODEL_NAME = "mediapipe"
 OUTPUT_PATH_FIELD = "output_path"
 
@@ -22,8 +23,9 @@ class App(ABC):
             model_complexity=2,
         )
 
-        self._config_data = self.__load_yaml_file(CONFIG_PATH)
+        self._pose_estimation_config = self.__load_yaml_file(POSE_ESTIMATION_CONFIG)
         self._exercise_table = self.__load_yaml_file(PHASES_TABLE)
+        self._segmentation_config = self.__load_yaml_file(SEGMENTATION_CONFIG)
 
     @abstractmethod
     def run(self, input: str, output: str, save_results: bool) -> None:

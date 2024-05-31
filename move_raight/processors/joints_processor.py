@@ -23,13 +23,13 @@ class JointsProcessor(Processor):
     def process(self, data: Any) -> list[Joint]:
         return [
             Joint(
-                self.current_processing_frame,
-                idx,
-                self.joint_names[idx],
-                joint.x,
-                joint.y,
-                joint.z,
-                joint.visibility,
+                frame=self.current_processing_frame,
+                id=idx,
+                name=self.joint_names[idx],
+                x=joint.x,
+                y=joint.y,
+                z=joint.z,
+                visibility=joint.visibility,
             )
             for idx, joint in enumerate(data.landmark)
             if idx in self.joint_names.keys()

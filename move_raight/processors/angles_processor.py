@@ -6,7 +6,8 @@ from models.angle import ANGLE_PARAMETERS_NUM, Angle
 from models.joint import Joint
 from processors.base import Processor
 
-ANGLE_TYPES = {"3D": [0, 1, 2], "roll": [1, 2], "pitch": [0, 2], "yaw": [0, 1]}
+# For mediapipe Y is switched with Z
+ANGLE_TYPES = {"3D": [0, 1, 2], "roll": [1, 2], "pitch": [0, 1], "yaw": [0, 2]}
 
 
 class AnglesProcessor(Processor):

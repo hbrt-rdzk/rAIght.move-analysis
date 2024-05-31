@@ -1,10 +1,11 @@
 squat:
   comparison_features: [
-    left_knee_3D,
-    right_knee_3D,
-    left_hip_3D,
-    right_hip_3D
+    left_knee,
+    right_knee,
+    left_hip,
+    right_hip
   ]
+
   start:
     right_knee_3D: 165
     left_knee_3D: 165

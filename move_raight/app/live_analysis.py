@@ -15,7 +15,7 @@ class LiveAnalysisApp(App):
         super().__init__()
         self.exercise_phases = self._exercise_table[exercise]
 
-        model_config_data = self._config_data[POSE_ESTIMATION_MODEL_NAME]
+        model_config_data = self._pose_estimation_config[POSE_ESTIMATION_MODEL_NAME]
         self.angle_names = model_config_data["angles"]
         self.joint_names = model_config_data["joints"]
         self.connections = model_config_data["connections"]["torso"]

@@ -18,10 +18,12 @@ class VideoAnalysisApp(App):
 
     def __init__(self, exercise: str) -> None:
         super().__init__()
-        self.segmentation_parameters = self._config_data["segmentation_parameters"]
-        model_config_data = self._config_data[POSE_ESTIMATION_MODEL_NAME]
+        self.segmentation_parameters = self._segmentation_config[
+            "segmentation_parameters"
+        ]
         self.comparison_features = self._exercise_table[exercise]["comparison_features"]
 
+        model_config_data = self._pose_estimation_config[POSE_ESTIMATION_MODEL_NAME]
         self.angle_names = model_config_data["angles"]
         self.joint_names = model_config_data["joints"]
         self.connections = model_config_data["connections"]["torso"]
@@ -39,15 +41,15 @@ class VideoAnalysisApp(App):
     def run(self, input: str, output: str, save_results: bool) -> None:
         joints_processor = JointsProcessor(self.joint_names)
         angles_processor = AnglesProcessor(self.angle_names)
-        results_processor = ResultsProcessor()
+        results_processor = ResultsProcessor(
+            self.reference_segment, self.comparison_features
+        )
 
         cap = cv2.VideoCapture(input)
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        segments_processor = SegmentsProcessor(
-            fps, self.segmentation_parameters, self.comparison_features
-        )
+        segments_processor = SegmentsProcessor(fps, self.segmentation_parameters)
 
         if not cap.isOpened():
             self.logger.critical("❌ Error on opening video stream or file! ❌")
@@ -74,7 +76,6 @@ class VideoAnalysisApp(App):
                 angles = angles_processor.process(joints)
                 angles_processor.update(angles)
         cap.release()
-
         analysis_info = (
             f"Analyzed {video_length} frames 🖼️"
             f", extracted {len(joints_processor)} joint features 💪 and"
@@ -98,11 +99,8 @@ class VideoAnalysisApp(App):
                 "Starting comparison with reference video for rep: %s... 🔥",
                 segment.rep,
             )
-            results = segments_processor.compare_segments(
-                segment, self.reference_segment
-            )
-            fine_results = results_processor.process(results)
-            results_processor.update(fine_results)
+            results = results_processor.process(segment)
+            results_processor.update(results)
         self.logger.info("Analysis complete! ✅")
         if save_results:
             try:

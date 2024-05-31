@@ -13,13 +13,10 @@ from utils.dtw import get_warped_frame_indexes
 
 
 class SegmentsProcessor(Processor):
-    def __init__(
-        self, fps: int, segmentation_parameters: dict, comparison_features: str
-    ) -> None:
+    def __init__(self, fps: int, segmentation_parameters: dict) -> None:
         super().__init__()
         self.fps = fps
         self.segmentaion_parameters = segmentation_parameters
-        self.comparison_featues = comparison_features
 
     def process(self, data: tuple[list[Joint], list[Angle]]) -> list[Segment]:
         joints, angles = data
@@ -76,32 +73,6 @@ class SegmentsProcessor(Processor):
 
             joints_df.to_csv(os.path.join(results_path, "joints.csv"), index=False)
             angles_df.to_csv(os.path.join(results_path, "angles.csv"), index=False)
-
-    def compare_segments(self, query: Segment, reference: Segment) -> list:
-        results = []
-        for feature in self.comparison_featues:
-            query_signal = self.__get_features_signal(query.angles, feature)
-            reference_signal = self.__get_features_signal(reference.angles, feature)
-            path = get_warped_frame_indexes(query_signal, reference_signal)
-            for id, (query_index, reference_index) in enumerate(path):
-                query_span = query_index * ANGLES_PER_FRAME
-                referencey_span = reference_index * ANGLES_PER_FRAME
-
-                query_angles = query.angles[query_span : query_span + ANGLES_PER_FRAME]
-                reference_angles = reference.angles[
-                    referencey_span : referencey_span + ANGLES_PER_FRAME
-                ]
-                for query_angle, reference_angle in zip(query_angles, reference_angles):
-                    if query_angle.name == feature:
-                        angle_diff = query_angle.value - reference_angle.value
-                        results.append([id, query.rep, query_angle.name, angle_diff])
-        return results
-
-    def __get_features_signal(self, angles: list[Angle], feature: str) -> np.ndarray:
-        angles_df = AnglesProcessor.to_df(angles).pivot(
-            index="frame", columns="name", values="value"
-        )
-        return angles_df[feature]
 
     def __get_exercise_signal(self, angles: list[Angle]) -> np.ndarray:
         angles_df = AnglesProcessor.to_df(angles).pivot(
