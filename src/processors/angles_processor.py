@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import pandas as pd
+
 from models.angle import ANGLE_PARAMETERS_NUM, Angle
 from models.joint import Joint
 from processors.base import Processor
@@ -36,13 +37,22 @@ class AnglesProcessor(Processor):
 
     @staticmethod
     def to_df(data: list[Angle]) -> pd.DataFrame:
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        df_reshaped = df.pivot(index="frame", columns="name", values="value")
+        return df_reshaped
 
     @staticmethod
-    def from_df(data: pd.DataFrame) -> list[Angle]:
+    def from_df(df: pd.DataFrame) -> list[Angle]:
+        value_vars = df.columns
+        df_melted = df.melt(
+            id_vars=["frame"],
+            value_vars=value_vars,
+            var_name="angle_name",
+            value_name="value",
+        )
         angles = []
-        for _, angle in data.iterrows():
-            angles.append(Angle(angle["frame"], angle["name"], angle["value"]))
+        for _, angle in df_melted.iterrows():
+            angles.append(Angle(angle["frame"], angle["angle_name"], angle["value"]))
         return angles
 
     def save(self, output_dir: str) -> None:
@@ -50,7 +60,7 @@ class AnglesProcessor(Processor):
         angles_df = self.to_df(self.data)
 
         results_path = os.path.join(output, "angles.csv")
-        angles_df.to_csv(results_path, index=False)
+        angles_df.to_csv(results_path, index=True)
 
     @staticmethod
     def __calculate_angle(

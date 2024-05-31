@@ -2,6 +2,7 @@ import os
 
 import cv2
 import pandas as pd
+
 from app.base import POSE_ESTIMATION_MODEL_NAME, App
 from processors.angles_processor import AnglesProcessor
 from processors.joints_processor import JointsProcessor
@@ -38,14 +39,14 @@ class VideoAnalysisApp(App):
             (reference_joints, reference_angles)
         )
 
-    def run(self, input: str, output: str, save_results: bool) -> None:
+    def run(self, input_source: str, output: str, save_results: bool) -> None:
         joints_processor = JointsProcessor(self.joint_names)
         angles_processor = AnglesProcessor(self.angle_names)
         results_processor = ResultsProcessor(
             self.reference_segment, self.comparison_features
         )
 
-        cap = cv2.VideoCapture(input)
+        cap = cv2.VideoCapture(input_source)
         fps = int(cap.get(cv2.CAP_PROP_FPS))
         video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -101,11 +102,12 @@ class VideoAnalysisApp(App):
             )
             results = results_processor.process(segment)
             results_processor.update(results)
+
         self.logger.info("Analysis complete! ✅")
         if save_results:
             try:
-                results_processor.save(output)
                 segments_processor.save(output)
+                results_processor.save(output)
                 self.logger.info("Results here: %s 💽", segment.rep)
             except ValueError as error:
                 self.logger.critical("Error on trying to save results:\n %s", error)

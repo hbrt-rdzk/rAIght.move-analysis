@@ -2,6 +2,7 @@ import os
 from typing import Any
 
 import pandas as pd
+
 from models.joint import JOINT_PARAMETERS_NUM, Joint
 from processors.base import Processor
 
@@ -40,12 +41,14 @@ class JointsProcessor(Processor):
 
     @staticmethod
     def to_df(data: list[list[Joint]]) -> pd.DataFrame:
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        df = df.set_index("frame")
+        return df
 
     @staticmethod
-    def from_df(data: pd.DataFrame) -> list[list[Joint]]:
+    def from_df(df: pd.DataFrame) -> list[list[Joint]]:
         joints = []
-        for _, joint in data.iterrows():
+        for _, joint in df.iterrows():
             joints.append(
                 Joint(
                     joint["frame"],

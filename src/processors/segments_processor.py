@@ -2,14 +2,14 @@ import os
 
 import numpy as np
 import pandas as pd
-from models.angle import ANGLES_PER_FRAME, Angle
+from sklearn.preprocessing import MinMaxScaler
+
+from models.angle import Angle
 from models.joint import Joint
 from models.segment import Segment
 from processors.angles_processor import AnglesProcessor
 from processors.base import Processor
 from processors.joints_processor import JointsProcessor
-from sklearn.preprocessing import MinMaxScaler
-from utils.dtw import get_warped_frame_indexes
 
 
 class SegmentsProcessor(Processor):
@@ -47,10 +47,10 @@ class SegmentsProcessor(Processor):
         return JointsProcessor.to_df(data.joints), AnglesProcessor.to_df(data.angles)
 
     @staticmethod
-    def from_df(data: tuple[pd.DataFrame, pd.DataFrame]) -> list[Segment]:
-        joints, angles = data
-        joints = JointsProcessor.from_df(joints)
-        angles = AnglesProcessor.from_df(angles)
+    def from_df(df: tuple[pd.DataFrame, pd.DataFrame]) -> list[Segment]:
+        joints_df, angles_df = df
+        joints = JointsProcessor.from_df(joints_df)
+        angles = AnglesProcessor.from_df(angles_df)
         start_frame = joints[0].frame
         finish_frame = joints[-1].frame
 
@@ -70,14 +70,11 @@ class SegmentsProcessor(Processor):
             os.makedirs(results_path, exist_ok=True)
 
             joints_df, angles_df = self.to_df(segment)
-
-            joints_df.to_csv(os.path.join(results_path, "joints.csv"), index=False)
-            angles_df.to_csv(os.path.join(results_path, "angles.csv"), index=False)
+            joints_df.to_csv(os.path.join(results_path, "joints.csv"))
+            angles_df.to_csv(os.path.join(results_path, "angles.csv"))
 
     def __get_exercise_signal(self, angles: list[Angle]) -> np.ndarray:
-        angles_df = AnglesProcessor.to_df(angles).pivot(
-            index="frame", columns="name", values="value"
-        )
+        angles_df = AnglesProcessor.to_df(angles)
         scaler = MinMaxScaler()
         important_features = (
             angles_df.std()

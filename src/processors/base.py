@@ -36,7 +36,7 @@ class Processor(ABC):
 
     @staticmethod
     @abstractmethod
-    def from_df(data: pd.DataFrame) -> Any:
+    def from_df(df: pd.DataFrame) -> Any:
         """
         Convert data from DataFrame object
         """

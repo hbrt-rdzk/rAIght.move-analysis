@@ -1,4 +1,5 @@
 import cv2
+
 from app.base import POSE_ESTIMATION_MODEL_NAME, App
 from processors.angles_processor import AnglesProcessor
 from processors.joints_processor import JointsProcessor
@@ -20,14 +21,14 @@ class LiveAnalysisApp(App):
         self.joint_names = model_config_data["joints"]
         self.connections = model_config_data["connections"]["torso"]
 
-    def run(self, input: str, output: str, save_results: bool) -> None:
+    def run(self, input_source: str, output: str, save_results: bool) -> None:
         joints_processor = JointsProcessor(self.joint_names)
         angles_processor = AnglesProcessor(self.angle_names)
 
         visualizer = Visualizer(self.connections)
         repetitions_counter = RepetitionsCounter(self.exercise_phases)
 
-        cap = cv2.VideoCapture(input)
+        cap = cv2.VideoCapture(input_source)
         cv2.namedWindow("Mediapipe", cv2.WINDOW_AUTOSIZE)
         cv2.moveWindow("Mediapipe", 0, -100)
 

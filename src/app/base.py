@@ -28,7 +28,7 @@ class App(ABC):
         self._segmentation_config = self.__load_yaml_file(SEGMENTATION_CONFIG)
 
     @abstractmethod
-    def run(self, input: str, output: str, save_results: bool) -> None:
+    def run(self, input_source: str, output: str, save_results: bool) -> None:
         """
         Run app's flow
         """
