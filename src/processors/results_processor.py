@@ -78,6 +78,3 @@ class ResultsProcessor(Processor):
             os.makedirs(results_path, exist_ok=True)
             results_df = self.to_df(segment_results)
             results_df.to_csv(os.path.join(results_path, "angles_diffs.csv"))
-
-    def check_mistakes(mistakes: list[Mistake]) -> str:
-        pass

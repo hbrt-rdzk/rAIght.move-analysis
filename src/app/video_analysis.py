@@ -69,7 +69,6 @@ class VideoAnalysisApp(App):
                 for segment in segments
             ]
         )
-        print(segments_info)
         self.logger.info("Segmented video frames: %s", segments_info)
 
         for segment in segments:
@@ -83,14 +82,14 @@ class VideoAnalysisApp(App):
             feedback = mistakes_proecssor.process(results)
             mistakes_proecssor.update(feedback)
 
+            unique_feedback = set(mistake.fix_info for mistake in feedback)
+            self.logger.info("Feedback: %s", ", ".join(unique_feedback))
+
         self.logger.info("Analysis complete! ✅")
         if save_results:
-            try:
-                segments_processor.save(output)
-                results_processor.save(output)
-                self.logger.info("Results here: %s 💽", output)
-            except ValueError as error:
-                self.logger.critical("Error on trying to save results:\n %s", error)
+            self.save_results(
+                output, segments_processor, results_processor, mistakes_proecssor
+            )
 
     def extract_features(
         self, cap: cv2.VideoCapture
@@ -119,3 +118,18 @@ class VideoAnalysisApp(App):
         cap.release()
 
         return joints_processor.data, angles_processor.data
+
+    def save_results(
+        self,
+        output: str,
+        segments_processor: SegmentsProcessor,
+        results_processor: ResultsProcessor,
+        mistakes_proecssor: MistakesProcessor,
+    ) -> None:
+        try:
+            segments_processor.save(output)
+            results_processor.save(output)
+            mistakes_proecssor.save(output)
+            self.logger.info("Results here: %s 💽", output)
+        except ValueError as error:
+            self.logger.critical("Error on trying to save results:\n %s", error)
