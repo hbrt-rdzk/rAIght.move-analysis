@@ -9,6 +9,6 @@ class Mistake:
 
     exercise: str
     mistake_name: str
+    fix_info: str
     angle_name: str
     threshold: float
-    fix_info: str

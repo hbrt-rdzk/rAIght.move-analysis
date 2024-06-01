@@ -17,6 +17,7 @@ class AnglesProcessor(Processor):
         self.angle_names = angle_names
 
     def __len__(self) -> int:
+
         return len(self.data) * ANGLE_PARAMETERS_NUM
 
     def process(self, data: list[Joint]) -> list[Angle]:
@@ -64,7 +65,7 @@ class AnglesProcessor(Processor):
 
     @staticmethod
     def __calculate_angle(
-        v1: np.ndarray, v2: np.ndarray, v3: np.ndarray, dims: list = [0, 1, 2]
+        v1: np.ndarray, v2: np.ndarray, v3: np.ndarray, dims: list
     ) -> float:
         if not all(arr.shape == (3,) for arr in (v1, v2, v3)):
             raise ValueError("Input arrays must all be of shape (3,).")

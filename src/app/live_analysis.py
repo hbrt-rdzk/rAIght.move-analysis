@@ -33,12 +33,14 @@ class LiveAnalysisApp(App):
         cv2.moveWindow("Mediapipe", 0, -100)
 
         if not cap.isOpened():
-            self.logger.critical("Error on opening video stream or file!")
+            self.logger.critical("❌ Error on opening video stream or file! ❌")
             return
+
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 break
+
             results = self._pose_estimation_model.process(frame)
             landmarks = results.pose_landmarks
             world_landmards = results.pose_world_landmarks

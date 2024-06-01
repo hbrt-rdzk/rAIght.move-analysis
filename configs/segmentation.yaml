@@ -1,4 +1,4 @@
-segmentation_parameters:
+segmentation_params:
   signal_features: 6
   sliding_window_scaler: 5
   stride: 1
