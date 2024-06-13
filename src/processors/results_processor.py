@@ -5,7 +5,7 @@ import pandas as pd
 from models.mistake import Mistake
 from models.result import Result
 from models.segment import Segment
-from processors.angles_processor import ANGLE_TYPES
+from processors.angles_processor import MEDIAPIPE_ANGLE_TYPES
 from processors.base import Processor
 from utils.dtw import (filter_repetable_reference_indexes,
                        get_warped_frame_indexes)
@@ -27,7 +27,7 @@ class ResultsProcessor(Processor):
         query = data
         results = []
         for feature in self.comparison_features:
-            for angle_type in ANGLE_TYPES.keys():
+            for angle_type in MEDIAPIPE_ANGLE_TYPES.keys():
                 angle_name = feature + "_" + angle_type
                 query = [
                     angle.value for angle in data.angles if angle.name == angle_name

@@ -1,5 +1,9 @@
 squat:
-  comparison_features: 
+  segment_angles: 
+    - left_hip_3D
+    - right_hip_3D
+
+  comparison_features:
     - left_knee
     - right_knee
     - left_hip
@@ -8,32 +12,32 @@ squat:
   start:
     right_knee_3D: 165
     left_knee_3D: 165
-
   finish:
     right_knee_3D: 75
     left_knee_3D: 75
 
   mistakes_table:
+    knees_inward:
+      fix_info: "Keep your knees more narrow!"
+      errors: 
+        - angle_name: left_knee_front
+          threshold: -25
+        - angle_name: right_knee_front
+          threshold: -25
+    
     not_low_enough:
       fix_info: "Go lower!"
       errors: 
-        - angle_name: right_knee_pitch
-          threshold: 15
-        - angle_name: left_knee_pitch
-          threshold: 15
-        - angle_name: right_hip_pitch
-          threshold: 15
-        - angle_name: left_hip_pitch
-          threshold: 15
-
-    feet_too_wide:
-      fix_info: "Keep your legs wider!"
-      errors: 
-        - angle_name: right_knee_pitch
-          threshold: 15
-        - angle_name: left_knee_pitch
-          threshold: 15
-        - angle_name: right_hip_pitch
-          threshold: 15
-        - angle_name: left_hip_pitch
-          threshold: 15
+        - angle_name: left_hip_side
+          threshold: -60
+        - angle_name: left_hip_side
+          threshold: -60
+    
+    front_bend:
+      fix_info: "Don't bend your back forward!"
+      errors:
+        - angle_name: left_hip_front
+          threshold: 25
+        - angle_name: right_hip_front
+          threshold: 25
+    

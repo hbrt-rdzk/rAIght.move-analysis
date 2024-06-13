@@ -25,7 +25,6 @@ class App(ABC):
 
         self._pose_estimation_config = self.__load_yaml_file(POSE_ESTIMATION_CONFIG)
         self._exercise_table = self.__load_yaml_file(PHASES_TABLE)
-        self._segmentation_config = self.__load_yaml_file(SEGMENTATION_CONFIG)
 
     @abstractmethod
     def run(self, input_source: str, output: str, save_results: bool) -> None:

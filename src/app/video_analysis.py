@@ -23,8 +23,8 @@ class VideoAnalysisApp(App):
     def __init__(self, exercise: str) -> None:
         super().__init__()
         self.exercise = exercise
-        self.segmentation_params = self._segmentation_config["segmentation_params"]
         self.comparison_features = self._exercise_table[exercise]["comparison_features"]
+        self.segment_angles = self._exercise_table[exercise]["segment_angles"]
         self.mistakes_table = self._exercise_table[exercise]["mistakes_table"]
 
         model_config_data = self._pose_estimation_config[POSE_ESTIMATION_MODEL_NAME]
@@ -48,7 +48,7 @@ class VideoAnalysisApp(App):
         video_length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         joint_data, angles_data = self.extract_features(cap)
 
-        segments_processor = SegmentsProcessor(fps, self.segmentation_params)
+        segments_processor = SegmentsProcessor(fps, self.segment_angles)
         mistakes_proecssor = MistakesProcessor(self.mistakes_table, self.exercise)
         results_processor = ResultsProcessor(
             self.reference_segment, self.comparison_features

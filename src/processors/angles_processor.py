@@ -8,7 +8,7 @@ from models.joint import Joint
 from processors.base import Processor
 
 # For mediapipe Y is switched with Z
-ANGLE_TYPES = {"3D": [0, 1, 2], "roll": [1, 2], "pitch": [0, 1], "yaw": [0, 2]}
+MEDIAPIPE_ANGLE_TYPES = {"3D": [0, 1, 2], "top": [0, 2], "side": [0, 1], "front": [1, 2]}
 
 
 class AnglesProcessor(Processor):
@@ -17,7 +17,6 @@ class AnglesProcessor(Processor):
         self.angle_names = angle_names
 
     def __len__(self) -> int:
-
         return len(self.data) * ANGLE_PARAMETERS_NUM
 
     def process(self, data: list[Joint]) -> list[Angle]:
@@ -27,7 +26,7 @@ class AnglesProcessor(Processor):
         angles = []
         for angle_name, joint_ids in self.angle_names.items():
             coords = np.array([joint_dict[joint_id] for joint_id in joint_ids])
-            for angle_type, angle_dims in ANGLE_TYPES.items():
+            for angle_type, angle_dims in MEDIAPIPE_ANGLE_TYPES.items():
                 angle = self.__calculate_angle(*coords, angle_dims)
                 angles.append(Angle(frame_number, f"{angle_name}_{angle_type}", angle))
 
