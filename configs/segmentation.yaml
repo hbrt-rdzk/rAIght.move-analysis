@@ -1,6 +1,0 @@
-segmentation_params:
-  signal_features: 6
-  sliding_window_scaler: 5
-  stride: 1
-  tolerance: 0.005
-  threshold_height_scaler: 1.5

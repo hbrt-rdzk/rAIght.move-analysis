@@ -40,4 +40,69 @@ squat:
           threshold: 25
         - angle_name: right_hip_front
           threshold: 25
+
+plank:
+  segment_angles: 
+    - left_hip_3D
+    - right_hip_3D
+
+  comparison_features:
+    - left_shoulder
+    - right_shoulder
+    - left_hip
+    - right_hip
+
+  start:
+    right_knee_3D: 165
+    left_knee_3D: 165
+  finish:
+    right_knee_3D: 75
+    left_knee_3D: 75
+
+  mistakes_table:
+    hunched_back:
+      fix_info: "Keep your bakck straight!"
+      errors: 
+        - angle_name: left_hip_3D
+          threshold: 25
+        - angle_name: right_knee_3D
+          threshold: 25
     
+    arched_back:
+      fix_info: "Keep your bakck straight!"
+      errors: 
+        - angle_name: left_hip_3D
+          threshold: -25
+        - angle_name: right_knee_3D
+          threshold: -25
+ 
+lunges:
+    segment_angles: 
+    - left_knee_3D
+    - right_knee_3D
+
+  comparison_features:
+    - left_knee
+    - right_knee
+    - left_hip
+    - right_hip
+
+  start:
+    right_knee_3D: 165
+    left_knee_3D: 165
+  finish:
+    right_knee_3D: 75
+    left_knee_3D: 75
+
+  mistakes_table:
+    hunched_back:
+      fix_info: "Not low enough!"
+      errors: 
+        - angle_name: right_hip_3D
+          threshold: 30
+    
+    arched_back:
+      fix_info: "Knee passes toe"
+      errors: 
+        - angle_name: right_knee_side
+          threshold: 30
