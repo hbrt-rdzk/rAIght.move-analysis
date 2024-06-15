@@ -6,7 +6,6 @@ import yaml
 
 POSE_ESTIMATION_CONFIG = "configs/pose_estimators.yaml"
 PHASES_TABLE = "configs/exercises_table.yaml"
-SEGMENTATION_CONFIG = "configs/segmentation.yaml"
 POSE_ESTIMATION_MODEL_NAME = "mediapipe"
 OUTPUT_PATH_FIELD = "output_path"
 
