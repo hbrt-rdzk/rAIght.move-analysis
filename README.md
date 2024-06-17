@@ -1,6 +1,6 @@
-# move.rAIght
+# rAIght.move
 
-move.rAIght is an AI-powered tool designed to help you analyze and improve your workout form with real-time feedback. Using advanced pose estimation technology, this gym assistant evaluates your form during exercises such as squats and bench presses, ensuring that you get the most out of your workout safely and effectively.
+rAIght.move is an AI-powered tool designed to help you analyze and improve your workout form with real-time feedback. Using advanced pose estimation technology, this gym assistant evaluates your form during exercises such as squats and bench presses, ensuring that you get the most out of your workout safely and effectively.
 
 ![squat](https://github.com/hbrt-rdzk/move.rAIght/assets/123837698/b30321df-d357-424a-9f5f-6343b4a85e0e)
 
@@ -22,6 +22,12 @@ Navigate to the cloned directory:
 
 ```bash
 cd move.rAIght
+```
+
+Create virtual environments:
+
+```bash
+python3 -m venv venv
 ```
 
 Install the necessary dependencies:
@@ -47,7 +53,6 @@ You have to provide the following arguments:
 Optional arguments:
 - `-o`, `--output`: Directory path for output data (CSV)
 - `--save_results`: If data should be saved or not
-- `--loop`: If video should be looped or not
 
 
 Example of running with a video file:
@@ -72,8 +77,6 @@ python3 scripts/cli.py --app="VIDEO" -i="path/to/video.mp4" --exercise="squat" -
 The `configs/config.yaml` file contains all the configuration parameters that Gym Assistant needs to know before analyzing your workout. Make sure to review and modify it if needed according to your specific requirements.
 
 ## Data
-
-Source: https://drive.google.com/drive/folders/1Y00Qw6QyAnhrxUWelyFcTm2a7tnZB93y
 
 The `data/` directory should contain your workout videos categorized by exercise type. This can be used to train the model or for personal record-keeping.
 
