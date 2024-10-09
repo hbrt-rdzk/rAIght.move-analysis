@@ -6,8 +6,6 @@ __pycache__/
 # C extensions
 *.so
 
-*.DS_Store
-
 # Distribution / packaging
 .Python
 build/
@@ -166,3 +164,10 @@ results/
 
 # VSCode IDE setting
 .vscode
+
+# macOS generated files
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+*.DS_Store
